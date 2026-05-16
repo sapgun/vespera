@@ -128,3 +128,38 @@ Local LLM asset tagging
 Automatic approval handling
 
 v0.1 is designed to be used manually first.
+
+---
+
+## 9. First Complete Manual Workflow
+
+After installation, you can test the full KAIROS v0.1 loop.
+
+### Step 1 — Log a task
+
+```powershell
+.\scripts\log-task.ps1 -Task "새 썸네일 이미지 파일을 프로젝트 폴더로 옮기고 싶어" -Project Aether_Crew_Lite
+Step 2 — Route the task
+.\scripts\route-task.ps1 -Task "새 썸네일 이미지 파일을 프로젝트 폴더로 옮기고 싶어"
+Step 3 — Create a test asset
+New-Item -ItemType File -Force -Path "D:\KAIROS_ASSET_LIBRARY\00_Inbox\Pending_Review\test-thumbnail.png"
+Step 4 — Register the asset
+.\scripts\register-asset.ps1 -Project Aether_Crew_Lite -AssetType Thumbnail -Tool ChatGPT
+Step 5 — Approve the asset
+.\scripts\approve-asset.ps1 -SourceFile "D:\KAIROS_ASSET_LIBRARY\00_Inbox\Pending_Review\test-thumbnail.png" -DestinationFolder "D:\KAIROS_ASSET_LIBRARY\01_Projects\Aether_Crew_Lite\02_Images" -NewFileName "20260516_AetherCrew_Thumbnail_ChatGPT_v01_Approved.png" -Project "Aether_Crew_Lite"
+
+When prompted, type:
+
+APPROVE
+Step 6 — Write audit log
+.\scripts\write-audit-log.ps1 -Project Aether_Crew_Lite -Action "Completed first KAIROS asset approval workflow" -PermissionLevel 2 -Status "Approved" -Notes "Manual test completed."
+Step 7 — Verify in Obsidian
+
+Check:
+
+00_Inbox/
+10_Asset_Index/ASSET_INDEX.md
+APPROVAL_QUEUE.md
+AUDIT_LOG.md
+
+If all files were updated, KAIROS v0.1 is working.

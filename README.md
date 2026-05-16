@@ -327,3 +327,68 @@ Publish files
 Share files
 
 This follows the KAIROS human-in-the-loop principle.
+
+---
+
+## First Complete Workflow
+
+This is the first complete manual workflow in KAIROS v0.1.
+
+```txt
+Task Intake
+→ Routing
+→ Approval Queue
+→ Asset Registration
+→ Asset Approval
+→ Audit Log
+1. Log a task
+.\scripts\log-task.ps1 -Task "새 썸네일 이미지 파일을 프로젝트 폴더로 옮기고 싶어" -Project Aether_Crew_Lite
+
+This creates a task note in the Obsidian Inbox.
+
+If the permission level is 2 or higher, it also creates an Approval Queue entry.
+
+2. Route a task
+.\scripts\route-task.ps1 -Task "새 썸네일 이미지 파일을 프로젝트 폴더로 옮기고 싶어"
+
+This recommends:
+
+Primary owner
+Secondary owner
+Reviewer
+Permission level
+Suggested prompt
+
+No external AI tool is called.
+
+3. Add a test asset
+New-Item -ItemType File -Force -Path "D:\KAIROS_ASSET_LIBRARY\00_Inbox\Pending_Review\test-thumbnail.png"
+4. Register the asset
+.\scripts\register-asset.ps1 -Project Aether_Crew_Lite -AssetType Thumbnail -Tool ChatGPT
+
+This records the asset into Obsidian Asset Index and Approval Queue.
+
+It does not move, rename, delete, publish, or share the file.
+
+5. Approve the asset move
+.\scripts\approve-asset.ps1 -SourceFile "D:\KAIROS_ASSET_LIBRARY\00_Inbox\Pending_Review\test-thumbnail.png" -DestinationFolder "D:\KAIROS_ASSET_LIBRARY\01_Projects\Aether_Crew_Lite\02_Images" -NewFileName "20260516_AetherCrew_Thumbnail_ChatGPT_v01_Approved.png" -Project "Aether_Crew_Lite"
+
+Type:
+
+APPROVE
+
+This moves and renames the file only after explicit human approval.
+
+6. Write an audit log
+.\scripts\write-audit-log.ps1 -Project Aether_Crew_Lite -Action "Completed first KAIROS asset approval workflow" -PermissionLevel 2 -Status "Approved" -Notes "Manual human-in-the-loop test completed."
+7. Check Obsidian
+
+Open the generated Obsidian Vault and check:
+
+00_Inbox/
+10_Asset_Index/ASSET_INDEX.md
+APPROVAL_QUEUE.md
+AUDIT_LOG.md
+01_Projects/Aether_Crew_Lite/
+
+If these files were updated, the first complete KAIROS workflow is working.
