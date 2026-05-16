@@ -392,3 +392,27 @@ AUDIT_LOG.md
 01_Projects/Aether_Crew_Lite/
 
 If these files were updated, the first complete KAIROS workflow is working.
+
+---
+
+## First Workflow Test
+
+After installation, you can test the full manual KAIROS loop:
+
+```powershell
+.\scripts\run-first-workflow-test.ps1
+
+This checks:
+
+Healthcheck
+→ Task Intake
+→ Routing
+→ Asset Registration
+→ Human Approval
+→ Asset Move
+→ Audit Log
+
+When prompted, type:
+
+APPROVE
+

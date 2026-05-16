@@ -163,3 +163,33 @@ APPROVAL_QUEUE.md
 AUDIT_LOG.md
 
 If all files were updated, KAIROS v0.1 is working.
+
+---
+
+## First Workflow Test Script
+
+KAIROS includes a full workflow test script:
+
+```powershell
+.\scripts\run-first-workflow-test.ps1
+
+This script tests:
+
+Healthcheck
+Task Intake
+Routing
+Test asset creation
+Asset registration
+Human-approved asset move
+Audit logging
+
+It creates and moves only a test file.
+
+When prompted, type:
+
+APPROVE
+
+Expected final output:
+
+[SUCCESS] KAIROS first workflow test completed.
+
