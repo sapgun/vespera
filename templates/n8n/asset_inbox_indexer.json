@@ -1,0 +1,11 @@
+﻿{
+  "name": "KAIROS - Asset Inbox Indexer",
+  "nodes": [],
+  "connections": {},
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "instanceName": "Asset Inbox Indexer"
+  }
+}
