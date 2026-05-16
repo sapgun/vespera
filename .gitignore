@@ -1,0 +1,45 @@
+﻿# Environment
+.env
+.env.*
+!.env.example
+
+# Secrets
+secrets/
+credentials/
+*.key
+*.pem
+token.json
+credentials.json
+
+# Local state
+state/
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large media files (Asset Library는 gitignore)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.psd
+*.ai
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.gif
