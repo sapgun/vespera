@@ -1,0 +1,25 @@
+﻿# KAIROS Storage Configuration
+# asset_storage와 backup 설정을 여기서 관리합니다.
+
+asset_storage:
+  provider: local                    # local | google_drive | nas | s3
+  primary_path: "D:\KAIROS_ASSET_LIBRARY"
+  inbox_path: "D:\KAIROS_ASSET_LIBRARY\00_Inbox"
+  final_path: "D:\KAIROS_ASSET_LIBRARY\08_Exports\Final"
+
+# 백업 설정
+backup:
+  enabled: true
+  strategy: daily_zip
+  providers:
+    - type: google_drive
+      path: "G:/My Drive/KAIROS_BACKUPS"
+      schedule: daily
+    - type: nas
+      path: "\\NAS\KAIROS_BACKUP"
+      schedule: weekly
+
+# 메타데이터 저장 위치
+metadata:
+  obsidian_vault_path: "C:\Users\pro\ObsidianVaults\KAIROS_Vault"
+  asset_index_path: "10_Asset_Index"
