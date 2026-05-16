@@ -1,20 +1,130 @@
-﻿# KAIROS Setup Guide
+﻿# KAIROS Quickstart
 
-## 1. 설치
+This guide helps you set up KAIROS in 5 minutes.
+
+KAIROS v0.1 is a manual-first local AI operations kit.
+
+It helps you create:
+
+- Obsidian Vault
+- Asset Library
+- Core templates
+- Permission Matrix
+- Approval Queue
+- Aether Crew Lite sample project
+- Basic healthcheck
+- Safe asset registration flow
+
+---
+
+## 1. Clone the repository
+
 ```powershell
-cd D:\KAIROS-KIT
+git clone https://github.com/sapgun/kairos-kit.git
+cd kairos-kit
+2. Run installer
 .\scripts\install.ps1
-# 1. docs 폴더 정리 + 재생성
-Remove-Item -Path "docs\*" -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path "docs" -Force | Out-Null
 
-# 2. QUICKSTART.md
-@'
-# KAIROS Quick Start (5분 설치)
+This creates:
 
-1. `.\scripts\install.ps1` 실행
-2. Obsidian에서 `C:\Users\pro\ObsidianVaults\KAIROS_Vault` 열기
-3. `01_Projects\Aether_Crew_Lite`에서 프로젝트 시작
-4. `APPROVAL_QUEUE.md`와 `ASSET_INDEX.md` 확인
+C:\Users\<YOUR_NAME>\ObsidianVaults\KAIROS_Vault
+D:\KAIROS_ASSET_LIBRARY
+3. Open Obsidian Vault
 
-끝. 이제 KAIROS를 실제로 사용할 수 있습니다.
+Open Obsidian.
+
+Choose:
+
+Open folder as vault
+
+Select:
+
+C:\Users\<YOUR_NAME>\ObsidianVaults\KAIROS_Vault
+
+You should see:
+
+00_Inbox
+01_Projects
+05_AI_Workflows
+10_Asset_Index
+KAIROS_PRINCIPLES.md
+AI_TEAM_ROLES.md
+KAIROS_PERMISSION_MATRIX.md
+APPROVAL_QUEUE.md
+ASSET_INDEX.md
+4. Run healthcheck
+.\scripts\healthcheck.ps1
+
+Expected result:
+
+FAIL: 0
+
+Warnings for n8n or Ollama are okay.
+They are optional tools for future versions.
+
+5. Test safe asset registration
+
+Create a test file:
+
+New-Item -ItemType File -Force -Path "D:\KAIROS_ASSET_LIBRARY\00_Inbox\Pending_Review\test-thumbnail.png"
+
+Register it:
+
+.\scripts\register-asset.ps1 -Project Aether_Crew_Lite -AssetType Thumbnail -Tool ChatGPT
+
+This will:
+
+Read files from 00_Inbox/Pending_Review
+Add pending records to Obsidian Asset Index
+Add approval records to Approval Queue
+Not rename files
+Not move files
+Not delete files
+Not publish or share files
+6. Check Obsidian
+
+Open:
+
+10_Asset_Index/ASSET_INDEX.md
+
+Also check:
+
+APPROVAL_QUEUE.md
+
+You should see the registered asset and a pending approval item.
+
+7. Start with Aether Crew Lite
+
+Open:
+
+01_Projects/Aether_Crew_Lite
+
+Recommended first files:
+
+00_Project_Brief.md
+01_Backlog.md
+02_Sprint_Board.md
+
+Add one real task to the backlog.
+
+8. Recommended first workflow
+1. Add task to Aether Crew Lite backlog
+2. Generate or add one asset
+3. Put asset into Pending_Review
+4. Run register-asset.ps1
+5. Review Approval Queue
+6. Approve manually
+7. Move or rename manually
+8. Record decision in Decision Log
+Current Limitations
+
+KAIROS v0.1 does not yet include:
+
+AI Router CLI
+Real n8n execution
+Hermes bot
+GUI console
+Local LLM asset tagging
+Automatic approval handling
+
+v0.1 is designed to be used manually first.

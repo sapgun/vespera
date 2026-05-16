@@ -306,3 +306,24 @@ Experimental.
 
 This repo is being built and tested as a personal AI operations kit first.  
 If it proves useful in real daily usage, it will be expanded into a more complete open-source toolkit.
+
+---
+
+## Safe Asset Registration
+
+KAIROS includes a safe asset registration script.
+
+```powershell
+.\scripts\register-asset.ps1 -Project Aether_Crew_Lite -AssetType Thumbnail -Tool ChatGPT
+
+This script only records pending assets.
+
+It does not:
+
+Rename files
+Move files
+Delete files
+Publish files
+Share files
+
+This follows the KAIROS human-in-the-loop principle.
