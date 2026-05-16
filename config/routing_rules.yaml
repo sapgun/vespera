@@ -1,0 +1,155 @@
+﻿# KAIROS Routing Rules
+# v0.1 manual-first routing configuration
+
+rules:
+  debug:
+    keywords:
+      - error
+      - failed
+      - build
+      - deploy
+      - npm
+      - pnpm
+      - yarn
+      - module not found
+      - hydration
+      - vercel
+      - netlify
+      - 에러
+      - 실패
+      - 빌드
+    primary: codex
+    secondary: claude_code
+    reviewer: chatgpt
+    permission_level: 1
+    suggested_prompt: "Analyze the error, identify the root cause, and suggest the minimal safe fix."
+
+  architecture:
+    keywords:
+      - architecture
+      - refactor
+      - structure
+      - codebase
+      - design
+      - 아키텍처
+      - 구조
+      - 리팩토링
+    primary: claude_code
+    secondary: chatgpt
+    reviewer: codex
+    permission_level: 1
+    suggested_prompt: "Analyze the full structure and propose a safe architecture or refactoring plan before editing."
+
+  strategy:
+    keywords:
+      - strategy
+      - business
+      - mvp
+      - roadmap
+      - product
+      - 기획
+      - 전략
+      - 비즈니스
+      - 로드맵
+    primary: chatgpt
+    secondary: gemini
+    reviewer: grok
+    permission_level: 0
+    suggested_prompt: "Clarify the product goal, MVP scope, risks, and next actions."
+
+  research:
+    keywords:
+      - research
+      - competitor
+      - market
+      - comparison
+      - risk
+      - 리서치
+      - 경쟁사
+      - 시장
+      - 비교
+      - 리스크
+    primary: gemini
+    secondary: chatgpt
+    reviewer: grok
+    permission_level: 0
+    suggested_prompt: "Research the topic critically and compare alternatives, risks, and opportunities."
+
+  network:
+    keywords:
+      - twitter
+      - x
+      - viral
+      - meme
+      - trend
+      - narrative
+      - grok
+      - 트위터
+      - 바이럴
+      - 밈
+      - 트렌드
+      - 내러티브
+    primary: grok
+    secondary: chatgpt
+    reviewer: gemini
+    permission_level: 0
+    suggested_prompt: "Evaluate the social narrative, viral potential, backlash risk, and crypto-native framing."
+
+  asset:
+    keywords:
+      - asset
+      - image
+      - video
+      - thumbnail
+      - infographic
+      - file
+      - 에셋
+      - 이미지
+      - 영상
+      - 썸네일
+      - 인포그래픽
+      - 파일
+    primary: local_llm
+    secondary: hermes
+    reviewer: sapgun
+    permission_level: 2
+    suggested_prompt: "Classify the asset, suggest filename and destination, but do not move or rename without human approval."
+
+  docs:
+    keywords:
+      - readme
+      - docs
+      - documentation
+      - guide
+      - whitepaper
+      - 문서
+      - 가이드
+      - 백서
+    primary: chatgpt
+    secondary: claude_code
+    reviewer: gemini
+    permission_level: 1
+    suggested_prompt: "Create clear documentation with structure, setup steps, limitations, and examples."
+
+  github:
+    keywords:
+      - issue
+      - pr
+      - pull request
+      - github
+      - commit
+      - 이슈
+      - 풀리퀘스트
+      - 커밋
+    primary: jules
+    secondary: codex
+    reviewer: sapgun
+    permission_level: 2
+    suggested_prompt: "Convert this into a small GitHub task or PR plan. Do not create or merge without approval."
+
+default:
+  primary: chatgpt
+  secondary: gemini
+  reviewer: sapgun
+  permission_level: 0
+  suggested_prompt: "Clarify the task, classify it, and recommend the safest next action."
