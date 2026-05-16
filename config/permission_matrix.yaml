@@ -1,0 +1,52 @@
+﻿# KAIROS Permission Matrix - permission_matrix.yaml
+
+levels:
+  0:
+    name: "Free"
+    description: "승인 없이 가능"
+    actions:
+      - 노트 요약
+      - 태그 추천
+      - 콘텐츠 초안 작성
+      - 아이디어 생성
+      - 텍스트 분석
+
+  1:
+    name: "Log Only"
+    description: "자동 실행 가능하지만 로그 필수"
+    actions:
+      - draft note 생성
+      - pending asset record 생성
+      - daily brief 저장
+      - debug log 생성
+
+  2:
+    name: "Human Approval Required"
+    description: "사용자 승인 필요"
+    actions:
+      - 파일 이름 변경 / 이동
+      - Google Calendar 이벤트 생성
+      - GitHub Issue 생성
+      - Sprint Plan 확정
+      - Asset을 Final로 표시
+
+  3:
+    name: "Double Confirmation Required"
+    description: "명시적 최종 확인 필요"
+    actions:
+      - 콘텐츠 발행
+      - 이메일 발송
+      - 앱 배포
+      - PR 생성 / merge
+      - 파일 삭제
+      - public link 공유
+
+  4:
+    name: "Manual Only / Forbidden"
+    description: "자동화 절대 금지"
+    actions:
+      - seed phrase
+      - private key
+      - wallet signing
+      - payment approval
+      - legal contract final submission

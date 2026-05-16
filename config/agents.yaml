@@ -1,0 +1,45 @@
+﻿# KAIROS AI Team Roles - agents.yaml
+
+chatgpt:
+  role: Chief Product & Strategy Officer
+  use_for:
+    - product_strategy
+    - mvp_scope
+    - business_model
+    - ux_flow
+    - documentation
+    - synthesis
+
+claude_code:
+  role: Senior Software Architect
+  use_for:
+    - codebase_analysis
+    - architecture
+    - refactoring
+    - large_feature_planning
+
+grok:
+  role: Network Intelligence Officer
+  use_for:
+    - x_trends
+    - crypto_sentiment
+    - narrative_testing
+    - daily_brief
+    - viral_review
+
+local_llm:
+  role: Chief of Staff / Router / Security Filter
+  use_for:
+    - task_classification
+    - sensitive_data_filtering
+    - prompt_draft
+    - asset_tagging
+    - note_summary
+
+hermes:
+  role: Operations Messenger / Workflow Dispatcher
+  use_for:
+    - approval_requests
+    - reminders
+    - status_updates
+    - sprint_notifications
