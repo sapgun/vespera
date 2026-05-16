@@ -416,3 +416,12 @@ When prompted, type:
 
 APPROVE
 
+
+### Core CLI Task Intake
+
+```powershell
+py .\core\kairos.py log-task "Vercel build error 해결" --project Aether_Crew_Lite
+
+This creates a Task Intake note in the Obsidian Inbox.
+
+If the task requires Level 2 or higher permission, it also creates an Approval Queue entry.

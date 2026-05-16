@@ -4,6 +4,8 @@ from pathlib import Path
 from router import route_task
 from audit import write_audit_log
 from paths import default_vault_path, default_asset_path, repo_root
+from task_intake import log_task
+
 
 def cmd_healthcheck(args):
     root = repo_root()
@@ -15,12 +17,15 @@ def cmd_healthcheck(args):
         ("Config folder", root / "config", True),
         ("Docs folder", root / "docs", True),
         ("Scripts folder", root / "scripts", True),
+        ("Core folder", root / "core", True),
         ("Obsidian Vault", vault, False),
         ("Asset Library", assets, False),
         ("Asset Pending Review", assets / "00_Inbox" / "Pending_Review", False),
     ]
 
-    ok = warn = fail = 0
+    ok = 0
+    warn = 0
+    fail = 0
 
     print()
     print("KAIROS Core Healthcheck")
@@ -48,6 +53,7 @@ def cmd_healthcheck(args):
 
     return 1 if fail else 0
 
+
 def cmd_route(args):
     result = route_task(args.task)
 
@@ -72,6 +78,44 @@ def cmd_route(args):
 
     return 0
 
+
+def cmd_log_task(args):
+    vault = args.vault or str(default_vault_path())
+
+    result = log_task(
+        vault_path=vault,
+        task=args.task,
+        project=args.project,
+    )
+
+    route = result["route"]
+
+    print()
+    print("KAIROS Core Task Intake")
+    print("=======================")
+    print()
+    print(f"[OK] Task note created -> {result['note_file']}")
+    print()
+    print(f"Route Type: {route.route_type}")
+    print(f"Primary: {route.primary}")
+    print(f"Secondary: {route.secondary}")
+    print(f"Reviewer: {route.reviewer}")
+    print(f"Permission Level: Level {route.permission_level}")
+    print()
+
+    if result["approval_required"]:
+        print("[APPROVAL REQUIRED] Added to Approval Queue:")
+        print(result["approval_file"])
+        print(f"Approval ID: {result['approval_id']}")
+        print()
+
+    print("No external AI tool was called.")
+    print("No file was moved, renamed, deleted, published, or shared.")
+    print()
+
+    return 0
+
+
 def cmd_audit(args):
     vault = args.vault or str(default_vault_path())
 
@@ -94,6 +138,7 @@ def cmd_audit(args):
 
     return 0
 
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="kairos",
@@ -111,6 +156,12 @@ def build_parser():
     route.add_argument("task")
     route.set_defaults(func=cmd_route)
 
+    log = sub.add_parser("log-task", help="Create a Task Intake note in Obsidian")
+    log.add_argument("task")
+    log.add_argument("--project", default="General")
+    log.add_argument("--vault", default="")
+    log.set_defaults(func=cmd_log_task)
+
     audit = sub.add_parser("audit", help="Write audit log")
     audit.add_argument("action")
     audit.add_argument("--project", default="General")
@@ -123,10 +174,12 @@ def build_parser():
 
     return parser
 
+
 def main():
     parser = build_parser()
     args = parser.parse_args()
     raise SystemExit(args.func(args))
+
 
 if __name__ == "__main__":
     main()
