@@ -21,34 +21,13 @@
       }
     },
     {
-      "id": "a1b2c3d4-0002-4000-8000-000000000002",
-      "name": "Execute Command",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [220, 300],
-      "parameters": {
-        "command": "py D:/Projects/vespera/core/vespera.py status"
-      }
-    },
-    {
-      "id": "a1b2c3d4-0003-4000-8000-000000000003",
-      "name": "Read Binary File",
-      "type": "n8n-nodes-base.readBinaryFile",
-      "typeVersion": 1,
-      "position": [440, 300],
-      "parameters": {
-        "filePath": "C:/Users/pro/ObsidianVaults/VESPERA_Vault/APPROVAL_QUEUE.md",
-        "dataPropertyName": "data"
-      }
-    },
-    {
       "id": "a1b2c3d4-0004-4000-8000-000000000004",
       "name": "Build Daily Brief",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 300],
+      "position": [220, 300],
       "parameters": {
-        "jsCode": "const now = new Date();\nconst pad = (n) => String(n).padStart(2, '0');\nconst dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;\nconst dateCompact = dateStr.replace(/-/g, '');\n\n// vespera status 출력\nlet statusOutput = '(no output)';\ntry {\n  statusOutput = $('Execute Command').first().json.stdout || '(no output)';\n} catch(e) {}\n\n// APPROVAL_QUEUE.md 내용\nlet approvalContent = '(file not found)';\ntry {\n  const buf = await this.helpers.getBinaryDataBuffer(items[0], 'data');\n  approvalContent = buf.toString('utf-8');\n} catch(e) {}\n\n// Pending 항목 추출\nconst pendingRows = approvalContent\n  .split('\\n')\n  .filter(l => l.trim().startsWith('|') && l.includes('Pending'))\n  .join('\\n');\nconst pendingSection = pendingRows || '(없음)';\n\nconst brief = [\n  '---',\n  'type: daily_brief',\n  `date: ${dateStr}`,\n  '---',\n  `# Daily Brief - ${dateStr}`,\n  '',\n  '## Status',\n  '```',\n  statusOutput.trim(),\n  '```',\n  '',\n  '## Approval Queue',\n  pendingSection,\n  '',\n  \"## Today's Focus\",\n  '- [ ] ',\n  ''\n].join('\\n');\n\nconst fileName = `${dateCompact}_daily_brief.md`;\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(brief, 'utf-8'),\n  fileName,\n  'text/markdown'\n);\n\nreturn [{ json: { dateCompact, fileName }, binary: { brief: binaryData } }];"
+        "jsCode": "const fs = require('fs');\n\nconst now = new Date();\nconst pad = (n) => String(n).padStart(2, '0');\nconst dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;\nconst dateCompact = dateStr.replace(/-/g, '');\n\n// APPROVAL_QUEUE.md 읽기\nlet approvalContent = '(file not found)';\ntry {\n  approvalContent = fs.readFileSync(\n    'C:/Users/pro/ObsidianVaults/VESPERA_Vault/APPROVAL_QUEUE.md',\n    'utf-8'\n  );\n} catch(e) { approvalContent = `(read error: ${e.message})`; }\n\n// AUDIT_LOG.md 읽기\nlet auditContent = '(file not found)';\ntry {\n  auditContent = fs.readFileSync(\n    'C:/Users/pro/ObsidianVaults/VESPERA_Vault/AUDIT_LOG.md',\n    'utf-8'\n  );\n} catch(e) { auditContent = `(read error: ${e.message})`; }\n\n// Pending 항목 추출\nconst pendingRows = approvalContent\n  .split('\\n')\n  .filter(l => l.trim().startsWith('|') && l.includes('Pending'))\n  .join('\\n') || '(없음)';\n\n// 최근 Audit 3줄\nconst auditRows = auditContent\n  .split('\\n')\n  .filter(l => l.trim().startsWith('|') && !l.includes('---') && !l.includes('Timestamp'))\n  .slice(-3)\n  .join('\\n') || '(없음)';\n\nconst content = [\n  '---',\n  'type: daily_brief',\n  `date: ${dateStr}`,\n  '---',\n  `# Daily Brief - ${dateStr}`,\n  '',\n  '## Approval Queue',\n  pendingRows,\n  '',\n  '## Recent Audit',\n  auditRows,\n  '',\n  \"## Today's Focus\",\n  '- [ ] ',\n  ''\n].join('\\n');\n\nconst fileName = `${dateCompact}_daily_brief.md`;\n\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(content, 'utf-8'),\n  fileName,\n  'text/markdown'\n);\n\nreturn [{ json: { content, filename: fileName }, binary: { brief: binaryData } }];"
       }
     },
     {
@@ -56,25 +35,15 @@
       "name": "Write Daily Brief",
       "type": "n8n-nodes-base.writeBinaryFile",
       "typeVersion": 1,
-      "position": [880, 300],
+      "position": [440, 300],
       "parameters": {
-        "fileName": "=C:/Users/pro/ObsidianVaults/VESPERA_Vault/08_Daily_Brief/{{ $json.dateCompact }}_daily_brief.md",
+        "fileName": "=C:/Users/pro/ObsidianVaults/VESPERA_Vault/08_Daily_Brief/{{ $json.filename }}",
         "dataPropertyName": "brief"
       }
     }
   ],
   "connections": {
     "Schedule Trigger": {
-      "main": [
-        [{ "node": "Execute Command", "type": "main", "index": 0 }]
-      ]
-    },
-    "Execute Command": {
-      "main": [
-        [{ "node": "Read Binary File", "type": "main", "index": 0 }]
-      ]
-    },
-    "Read Binary File": {
       "main": [
         [{ "node": "Build Daily Brief", "type": "main", "index": 0 }]
       ]
@@ -89,7 +58,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "1",
+  "versionId": "2",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceName": "VESPERA"
