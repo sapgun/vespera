@@ -143,12 +143,104 @@ def cmd_audit(args):
 
 
 def cmd_doctor(args):
+    import importlib.util
+
+    root = repo_root()
+
     console.print(Panel.fit("[bold cyan]VESPERA Doctor[/bold cyan] [dim]— Full System Diagnostics[/dim]", border_style="blue"))
-    console.print("[green]✓ Obsidian Vault found[/green]")
-    console.print("[green]✓ Asset Library found[/green]")
     console.print()
-    console.print("[green bold]✓ All systems healthy. VESPERA is ready.[/green bold]")
-    return 0
+
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Status", style="bold", width=8)
+    table.add_column("Category", width=16)
+    table.add_column("Item", width=30)
+    table.add_column("Detail")
+
+    ok = warn = fail = 0
+
+    def add_ok(category, item, detail=""):
+        nonlocal ok
+        table.add_row("[green]OK[/green]", category, item, detail)
+        ok += 1
+
+    def add_warn(category, item, detail=""):
+        nonlocal warn
+        table.add_row("[yellow]WARN[/yellow]", category, item, detail)
+        warn += 1
+
+    def add_fail(category, item, detail=""):
+        nonlocal fail
+        table.add_row("[red]FAIL[/red]", category, item, detail)
+        fail += 1
+
+    # 1. Config 파일 개별 존재 여부 (healthcheck는 config 폴더만 체크)
+    for cf in ["agents.yaml", "permission_matrix.yaml", "routing_rules.yaml", "storage.yaml"]:
+        p = root / "config" / cf
+        if p.exists():
+            add_ok("Config", cf, "Found")
+        else:
+            add_fail("Config", cf, f"Missing: config/{cf}")
+
+    # Vault / Asset Library 존재 여부
+    vault = default_vault_path()
+    assets = default_asset_path()
+    if vault.exists():
+        add_ok("Paths", "Obsidian Vault", str(vault))
+    else:
+        add_warn("Paths", "Obsidian Vault", f"Not found — run 'vespera init'")
+
+    if assets.exists():
+        add_ok("Paths", "Asset Library", str(assets))
+    else:
+        add_warn("Paths", "Asset Library", f"Not found — run 'vespera init'")
+
+    # 2. Python 패키지 설치 여부
+    pkg_checks = [("rich", "rich"), ("pyyaml", "yaml")]
+    for display_name, import_name in pkg_checks:
+        if importlib.util.find_spec(import_name) is not None:
+            add_ok("Packages", display_name, "Installed")
+        else:
+            add_fail("Packages", display_name, f"pip install {display_name}")
+
+    # 3. .env 파일 존재 여부 (내용 노출 금지)
+    env_path = root / ".env"
+    if env_path.exists():
+        add_ok("Environment", ".env", "Found (contents hidden)")
+    else:
+        add_warn("Environment", ".env", "Not found (optional)")
+
+    # 4. _fix_*.py 임시 파일 잔재 여부
+    fix_files = list(root.rglob("_fix_*.py"))
+    if fix_files:
+        for f in fix_files:
+            add_warn("Cleanup", f.name, f"Temp file: {f.relative_to(root)}")
+    else:
+        add_ok("Cleanup", "_fix_*.py files", "None found")
+
+    # 5. core/__pycache__ 오염 여부
+    pycache = root / "core" / "__pycache__"
+    if pycache.exists():
+        pyc_count = len(list(pycache.glob("*.pyc")))
+        add_warn("Cache", "core/__pycache__", f"{pyc_count} .pyc file(s) present")
+    else:
+        add_ok("Cache", "core/__pycache__", "Clean")
+
+    console.print(table)
+    console.print()
+    console.print("[bold]Summary[/bold]")
+    console.print(f"  [green]OK   :[/green] {ok}")
+    console.print(f"  [yellow]WARN :[/yellow] {warn}")
+    console.print(f"  [red]FAIL :[/red] {fail}")
+    console.print()
+
+    if fail > 0:
+        console.print("[red bold][!] Critical items missing. Check FAIL rows above.[/red bold]")
+    elif warn > 0:
+        console.print("[yellow][!] Some items need attention. Check WARN rows above.[/yellow]")
+    else:
+        console.print("[green bold][OK] All checks passed. VESPERA is healthy.[/green bold]")
+
+    return 1 if fail else 0
 
 
 def cmd_init(args):
@@ -303,12 +395,21 @@ def cmd_backup(args):
                 table.add_row('Asset 90_Metadata', '[dim]Empty (OK)[/dim]')
 
         size_kb = round(zip_path.stat().st_size / 1024, 1)
+
+        from storage import get_max_backups
+        max_keep = get_max_backups(config)
+        existing = sorted(backup_dir.glob("VESPERA_backup_*.zip"))
+        to_delete = existing[:-max_keep] if len(existing) > max_keep else []
+        for old in to_delete:
+            old.unlink()
+
         console.print(table)
         console.print()
         console.print('[green bold][OK] Backup complete[/green bold]')
         console.print(f'    File : [cyan]{zip_path}[/cyan]')
         console.print(f'    Size : {size_kb} KB')
         console.print(f'    Items: Vault {vault_count} + config {config_count} + metadata {meta_count}')
+        console.print(f'    Keep : latest {max_keep} backups (deleted {len(to_delete)} old)')
 
     except Exception as e:
         console.print(f'[red][FAIL] Backup failed: {e}[/red]')
@@ -317,10 +418,99 @@ def cmd_backup(args):
     return 0
 
 
+def _parse_md_table(text: str):
+    rows = []
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith('|') and line.endswith('|'):
+            cells = [c.strip() for c in line[1:-1].split('|')]
+            if any('---' in c for c in cells):
+                continue
+            rows.append(cells)
+    return rows[1:] if rows else []
+
+
 def cmd_status(args):
+    from storage import load_storage_config, get_backup_path
+    import re
+
+    root = repo_root()
+    vault = default_vault_path()
+    assets = default_asset_path()
+    config = load_storage_config(root)
+    backup_dir = get_backup_path(config)
+    today = datetime.now().strftime("%Y%m%d")
+
     console.print(Panel.fit("[bold cyan]VESPERA Status[/bold cyan]", border_style="blue"))
-    console.print("Quick system overview.")
-    console.print("Use [bold]vespera doctor[/bold] for detailed diagnostics.")
+    console.print()
+
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Category", width=20)
+    table.add_column("Status")
+
+    # 1. Approval Queue
+    aq_path = vault / "APPROVAL_QUEUE.md"
+    if not aq_path.exists():
+        aq_status = "[dim]Queue empty[/dim]"
+    else:
+        rows = _parse_md_table(aq_path.read_text(encoding="utf-8"))
+        pending = sum(1 for r in rows if len(r) > 3 and "Pending" in r[3])
+        aq_status = "[green]Clean[/green]" if pending == 0 else f"[yellow]{pending} pending[/yellow]"
+    table.add_row("Approval Queue", aq_status)
+
+    # 2. Asset Inbox
+    pending_review = assets / "00_Inbox" / "Pending_Review"
+    if not pending_review.exists():
+        inbox_status = "[yellow]WARN — folder not found[/yellow]"
+    else:
+        count = len([f for f in pending_review.glob("*") if f.is_file()])
+        inbox_status = "[green]Clean[/green]" if count == 0 else f"[yellow]{count} file(s)[/yellow]"
+    table.add_row("Asset Inbox", inbox_status)
+
+    # 3. Today's Task Intake
+    inbox_dir = vault / "00_Inbox"
+    if not inbox_dir.exists():
+        intake_status = "[dim]Inbox not found[/dim]"
+    else:
+        today_tasks = list(inbox_dir.glob(f"{today}*.md"))
+        intake_status = "[green]Clean[/green]" if len(today_tasks) == 0 else f"[yellow]{len(today_tasks)} task(s)[/yellow]"
+    table.add_row("Today's Intake", intake_status)
+
+    # 4. Recent Audit Log
+    audit_path = vault / "AUDIT_LOG.md"
+    if not audit_path.exists():
+        table.add_row("Recent Audit", "[dim]No audit entries yet[/dim]")
+    else:
+        rows = _parse_md_table(audit_path.read_text(encoding="utf-8"))
+        data_rows = [r for r in rows if len(r) >= 4 and r[0] and r[0] != "Timestamp"]
+        last3 = data_rows[-3:] if data_rows else []
+        if not last3:
+            table.add_row("Recent Audit", "[dim]No audit entries yet[/dim]")
+        else:
+            first = True
+            for r in last3:
+                ts = r[0][:16] if len(r[0]) >= 16 else r[0]
+                action = r[3] if len(r) > 3 else "—"
+                label = "Recent Audit" if first else ""
+                table.add_row(label, f"[dim]{ts}[/dim]  {action}")
+                first = False
+
+    # 5. Last Backup
+    zips = sorted(backup_dir.glob("VESPERA_backup_*.zip")) if backup_dir.exists() else []
+    if not zips:
+        backup_status = "[dim]No backup found[/dim]"
+    else:
+        m = re.search(r"VESPERA_backup_(\d{8})_(\d{6})\.zip", zips[-1].name)
+        if m:
+            d, t = m.group(1), m.group(2)
+            backup_status = f"{d[:4]}-{d[4:6]}-{d[6:]} {t[:2]}:{t[2:4]}"
+        else:
+            backup_status = zips[-1].name
+    table.add_row("Last Backup", backup_status)
+
+    console.print(table)
+    console.print()
+    console.print("[dim]Use [bold]vespera doctor[/bold] for full diagnostics.[/dim]")
     return 0
 
 
