@@ -4,22 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VESPERA — AI tools are workers, not owners</title>
+  <meta name="description" content="VESPERA is an open-source orchestration runtime for composable AI workflows. One protocol to orchestrate them all." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0D1117;
-      --bg-1:     #111820;
-      --bg-2:     #161d27;
-      --border:   #1e2a38;
-      --text:     #E8EDF5;
-      --text-2:   #8b98a8;
-      --accent:   #4A7FD4;
-      --accent-2: #6b9be0;
-      --accent-glow: rgba(74, 127, 212, 0.15);
+      --bg:           #0D1117;
+      --bg-1:         #111820;
+      --bg-2:         #161d27;
+      --border:       rgba(255,255,255,0.07);
+      --border-s:     #1e2a38;
+      --text:         #E8EDF5;
+      --text-2:       #8b98a8;
+      --text-3:       #3d4f63;
+      --accent:       #4A7FD4;
+      --accent-2:     #6b9be0;
+      --accent-g:     rgba(74,127,212,0.16);
+      --purple:       #7C3AED;
+      --purple-g:     rgba(124,58,237,0.14);
+      --green:        #10b981;
+      --amber:        #f59e0b;
     }
 
     html { scroll-behavior: smooth; }
@@ -30,23 +37,35 @@
       font-family: 'Space Grotesk', sans-serif;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-s); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    /* ── STAR CANVAS ── */
+    #stars {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1; pointer-events: none;
     }
 
     /* ── NAV ── */
     nav {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky; top: 0; z-index: 200;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 clamp(1.5rem, 5vw, 4rem);
-      height: 64px;
-      background: rgba(13, 17, 23, 0.85);
-      backdrop-filter: blur(12px);
+      padding: 0 clamp(1.5rem, 5vw, 4rem); height: 64px;
+      background: rgba(13,17,23,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
     .nav-logo {
-      font-size: 1.25rem; font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--text);
-      text-decoration: none;
+      font-size: 1.2rem; font-weight: 700; letter-spacing: 0.16em;
+      color: var(--text); text-decoration: none;
     }
     .nav-logo span { color: var(--accent); }
     .nav-links { display: flex; gap: 2rem; }
@@ -57,367 +76,460 @@
     .nav-links a:hover { color: var(--text); }
     .nav-cta {
       background: var(--accent); color: #fff;
-      padding: 0.5rem 1.25rem; border-radius: 6px;
-      font-size: 0.875rem; font-weight: 600;
-      text-decoration: none; transition: opacity 0.2s;
+      padding: 0.45rem 1.1rem; border-radius: 6px;
+      font-size: 0.8125rem; font-weight: 600; text-decoration: none;
+      display: flex; align-items: center; gap: 0.4rem;
+      transition: opacity 0.2s, transform 0.15s;
     }
-    .nav-cta:hover { opacity: 0.85; }
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-    }
+    .nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+    @media (max-width: 768px) { .nav-links { display: none; } }
 
-    /* ── SHARED ── */
-    section { padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 5vw, 4rem); }
+    /* ── MARQUEE ── */
+    .marquee-bar {
+      overflow: hidden; position: relative; z-index: 1;
+      background: var(--bg-1); border-bottom: 1px solid var(--border);
+      padding: 0.6rem 0;
+    }
+    .marquee-track {
+      display: flex; width: max-content;
+      animation: marquee 28s linear infinite;
+    }
+    .marquee-bar:hover .marquee-track { animation-play-state: paused; }
+    .marquee-item {
+      display: flex; align-items: center; gap: 1.5rem;
+      padding: 0 2rem; white-space: nowrap;
+      font-size: 0.72rem; font-weight: 500; color: var(--text-2);
+      letter-spacing: 0.04em;
+    }
+    .marquee-item b { color: var(--accent); font-weight: 700; }
+    .m-dot { color: var(--border-s); }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ── SHARED LAYOUT ── */
+    section { padding: clamp(4.5rem,10vw,7.5rem) clamp(1.5rem,5vw,4rem); position: relative; }
     .container { max-width: 1100px; margin: 0 auto; }
     .section-label {
-      display: inline-block;
-      font-size: 0.75rem; font-weight: 600;
-      letter-spacing: 0.12em; text-transform: uppercase;
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--accent); margin-bottom: 1rem;
     }
     h2 {
       font-size: clamp(1.75rem, 4vw, 2.5rem);
-      font-weight: 700; line-height: 1.2;
-      margin-bottom: 1.25rem;
+      font-weight: 700; line-height: 1.15; margin-bottom: 1.25rem;
     }
     .lead {
-      font-size: 1.125rem; color: var(--text-2);
-      max-width: 600px; margin-bottom: 3rem;
+      font-size: 1.0625rem; color: var(--text-2);
+      max-width: 580px; margin-bottom: 3rem; line-height: 1.8;
+      font-family: 'Inter', sans-serif;
     }
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(36px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
     }
-    .card {
-      background: var(--bg-1); border: 1px solid var(--border);
-      border-radius: 12px; padding: 2rem;
-      transition: border-color 0.25s, box-shadow 0.25s;
-    }
-    .card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent), 0 8px 32px var(--accent-glow);
-    }
-    .card-icon {
-      width: 44px; height: 44px; border-radius: 10px;
-      background: var(--accent-glow); border: 1px solid var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; margin-bottom: 1.25rem;
-    }
-    .card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .card p  { font-size: 0.9375rem; color: var(--text-2); line-height: 1.65; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.1s; }
+    .d2 { transition-delay: 0.2s; }
+    .d3 { transition-delay: 0.3s; }
+    .d4 { transition-delay: 0.4s; }
 
     /* ── HERO ── */
     #hero {
-      min-height: calc(100vh - 64px);
-      display: flex; align-items: center;
-      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74,127,212,0.12) 0%, transparent 70%);
+      min-height: calc(100vh - 101px);
+      display: flex; align-items: center; overflow: hidden;
     }
+    .orb {
+      position: absolute; border-radius: 50%;
+      pointer-events: none; z-index: 0;
+    }
+    .orb-blue {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(74,127,212,0.22) 0%, transparent 65%);
+      top: -250px; right: -150px; filter: blur(1px);
+      animation: orb1 22s ease-in-out infinite;
+    }
+    .orb-purple {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 65%);
+      bottom: -200px; left: -100px; filter: blur(1px);
+      animation: orb2 28s ease-in-out infinite;
+    }
+    @keyframes orb1 { 0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(-70px,50px) scale(1.06)} 70%{transform:translate(40px,-40px) scale(0.94)} }
+    @keyframes orb2 { 0%,100%{transform:translate(0,0) scale(1)} 35%{transform:translate(60px,-70px) scale(1.09)} 70%{transform:translate(-40px,40px) scale(0.96)} }
+
     .hero-inner {
+      position: relative; z-index: 1; width: 100%;
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 4rem; align-items: center;
     }
-    @media (max-width: 768px) {
-      .hero-inner { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; } }
+
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      background: var(--accent-glow); border: 1px solid var(--accent);
-      color: var(--accent-2); font-size: 0.8125rem; font-weight: 500;
-      padding: 0.375rem 0.875rem; border-radius: 999px;
-      margin-bottom: 1.5rem;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      background: rgba(74,127,212,0.09); border: 1px solid rgba(74,127,212,0.35);
+      color: var(--accent-2); font-size: 0.8rem; font-weight: 500;
+      padding: 0.4rem 1rem; border-radius: 999px; margin-bottom: 1.5rem;
+      box-shadow: 0 0 24px rgba(74,127,212,0.12);
     }
-    .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .bdot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: bdotpulse 2s ease-in-out infinite;
+    }
+    @keyframes bdotpulse { 0%,100%{box-shadow:0 0 8px var(--accent)} 50%{box-shadow:0 0 18px var(--accent),0 0 30px rgba(74,127,212,0.35)} }
+
     h1 {
-      font-size: clamp(2.25rem, 6vw, 3.75rem);
-      font-weight: 700; line-height: 1.1;
-      letter-spacing: -0.02em;
-      margin-bottom: 1.5rem;
+      font-size: clamp(2.25rem, 5.5vw, 3.75rem);
+      font-weight: 700; line-height: 1.08;
+      letter-spacing: -0.025em; margin-bottom: 1.5rem;
     }
-    h1 em { font-style: normal; color: var(--accent); }
+    h1 .w {
+      display: inline-block;
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    h1 .w.accent { color: var(--accent); }
+    h1.go .w { opacity: 1; transform: translateY(0); }
+
     .hero-desc {
-      font-size: 1.125rem; color: var(--text-2);
-      max-width: 480px; margin-bottom: 2.5rem;
+      font-family: 'Inter', sans-serif; font-size: 1.0625rem;
+      color: var(--text-2); max-width: 460px; margin-bottom: 2.5rem; line-height: 1.8;
     }
-    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+
     .btn-primary {
       background: var(--accent); color: #fff;
       padding: 0.75rem 1.75rem; border-radius: 8px;
-      font-size: 1rem; font-weight: 600; text-decoration: none;
-      transition: opacity 0.2s, transform 0.15s;
+      font-size: 0.9375rem; font-weight: 600; text-decoration: none;
       display: inline-flex; align-items: center; gap: 0.5rem;
+      position: relative; overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.2s;
     }
-    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn-secondary {
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.22) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.55s ease;
+    }
+    .btn-primary:hover::after { transform: translateX(100%); }
+    .btn-primary:hover { transform: scale(1.025) translateY(-1px); box-shadow: 0 10px 28px rgba(74,127,212,0.38); }
+
+    .btn-ghost {
       background: transparent; color: var(--text);
       padding: 0.75rem 1.75rem; border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 1rem; font-weight: 500; text-decoration: none;
-      transition: border-color 0.2s;
+      border: 1px solid var(--border-s);
+      font-size: 0.9375rem; font-weight: 500; text-decoration: none;
       display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: border-color 0.2s, transform 0.15s;
     }
-    .btn-secondary:hover { border-color: var(--accent); }
+    .btn-ghost:hover { border-color: var(--accent); transform: translateY(-1px); }
 
-    /* mock screenshot */
-    .hero-visual {
-      position: relative;
+    .hero-trust { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .trust-item {
+      font-size: 0.78rem; color: var(--text-3);
+      display: flex; align-items: center; gap: 0.35rem; font-weight: 500;
     }
+    .trust-item::before { content: '✓'; color: var(--green); }
+
+    /* Mock window */
+    .hero-visual { position: relative; }
     .mock-window {
-      background: var(--bg-1); border: 1px solid var(--border);
+      background: rgba(17,24,32,0.75);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 14px; overflow: hidden;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(74,127,212,0.1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.55),
+                  0 0 0 1px rgba(74,127,212,0.08),
+                  0 0 70px rgba(74,127,212,0.05);
     }
-    .mock-titlebar {
+    .mock-bar {
       display: flex; align-items: center; gap: 6px;
-      padding: 12px 16px;
-      background: var(--bg-2); border-bottom: 1px solid var(--border);
+      padding: 11px 16px;
+      background: rgba(22,29,39,0.9); border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .mock-dot:nth-child(1) { background: #ff5f56; }
-    .mock-dot:nth-child(2) { background: #ffbd2e; }
-    .mock-dot:nth-child(3) { background: #27c93f; }
-    .mock-titlebar-text {
-      margin-left: auto; margin-right: auto;
-      font-size: 0.75rem; color: var(--text-2); font-family: 'Space Mono', monospace;
+    .md { width: 10px; height: 10px; border-radius: 50%; }
+    .md:nth-child(1){background:#ff5f56} .md:nth-child(2){background:#ffbd2e} .md:nth-child(3){background:#27c93f}
+    .mock-bar-title {
+      margin: 0 auto; font-size: 0.72rem; color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace;
     }
     .mock-body {
-      padding: 1.5rem;
-      aspect-ratio: 16/9;
-      display: flex; align-items: center; justify-content: center;
-      position: relative;
-      background:
-        linear-gradient(180deg, var(--bg-1) 0%, var(--bg) 100%);
+      padding: 1.25rem 1.5rem; min-height: 220px;
+      background: linear-gradient(180deg, rgba(10,14,20,0.9) 0%, rgba(13,17,23,0.95) 100%);
     }
-    .mock-placeholder {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 0.75rem; color: var(--border);
-      font-size: 0.8125rem; font-family: 'Space Mono', monospace;
-    }
-    .mock-placeholder svg { opacity: 0.3; }
-    /* mock terminal lines */
-    .mock-lines {
-      position: absolute; left: 1.5rem; top: 1.5rem; right: 1.5rem;
-      display: flex; flex-direction: column; gap: 0.5rem;
-    }
-    .mock-line {
-      height: 10px; border-radius: 4px; background: var(--border);
-      opacity: 0.6;
-    }
-    .mock-line.accent { background: var(--accent); opacity: 0.25; }
-    .mock-line.short { width: 55%; }
-    .mock-line.medium { width: 75%; }
-    .mock-line.long { width: 90%; }
+    .mt { font-family: 'JetBrains Mono', monospace; font-size: 0.775rem; line-height: 1.9; }
+    .mp  { color: #f78c6c; }
+    .mc  { color: var(--text); }
+    .ms  { color: #c3e88d; }
+    .mk  { color: #89ddff; }
+    .mok { color: var(--green); }
+    .md2 { color: var(--text-3); }
+    .ma  { color: var(--accent-2); }
+    .mb  { color: var(--purple); opacity: 0.85; }
+    .mcur{ display:inline-block;width:2px;height:13px;background:var(--accent);vertical-align:middle;animation:cur 1s step-end infinite; }
+    @keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
 
     /* ── PROBLEM ── */
     #problem { background: var(--bg-1); }
-    .pain-list { display: flex; flex-direction: column; gap: 1.25rem; }
-    .pain-item {
-      display: flex; gap: 1.25rem; align-items: flex-start;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.5rem;
-      transition: border-color 0.2s;
+    #problem::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:80px;
+      background: linear-gradient(180deg, var(--bg), transparent);
+      pointer-events: none;
     }
-    .pain-item:hover { border-color: rgba(74,127,212,0.4); }
-    .pain-num {
-      flex-shrink: 0;
-      width: 36px; height: 36px; border-radius: 8px;
-      background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.2);
-      color: #f87171; font-weight: 700; font-size: 0.875rem;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .pain-item h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
-    .pain-item p  { font-size: 0.9rem; color: var(--text-2); }
-
-    /* ── SOLUTION ── */
-    #solution {}
-    .solution-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    .pain-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1.5rem;
     }
-    .feature-card {
-      background: var(--bg-1); border: 1px solid var(--border);
-      border-radius: 12px; padding: 2rem;
-      position: relative; overflow: hidden;
-      transition: border-color 0.25s, box-shadow 0.25s;
+    .pain-card {
+      background: rgba(17,24,32,0.55);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; padding: 2rem;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
     }
-    .feature-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
+    .pain-card:hover {
+      border-color: rgba(74,127,212,0.45);
+      box-shadow: 0 0 32px rgba(74,127,212,0.1), 0 10px 36px rgba(0,0,0,0.3);
+      transform: translateY(-5px);
     }
-    .feature-card:hover { border-color: var(--accent); }
-    .feature-card:hover::before { opacity: 1; }
-    .feature-card:hover { box-shadow: 0 8px 40px var(--accent-glow); }
-    .feature-num {
-      font-size: 0.75rem; font-weight: 700;
-      color: var(--accent); letter-spacing: 0.1em;
-      margin-bottom: 1rem; font-family: 'Space Mono', monospace;
+    .pain-num {
+      font-size: 4rem; font-weight: 800; line-height: 1;
+      color: rgba(74,127,212,0.12); letter-spacing: -0.03em;
+      margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;
     }
-    .feature-card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.625rem; }
-    .feature-card p  { font-size: 0.9375rem; color: var(--text-2); line-height: 1.65; }
-    .feature-tag {
+    .pain-card h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 0.625rem; }
+    .pain-card p  { font-size: 0.9rem; color: var(--text-2); line-height: 1.75; font-family: 'Inter', sans-serif; }
+
+    /* ── SOLUTION ── */
+    #solution::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:80px;
+      background: linear-gradient(180deg, var(--bg-1), transparent);
+      pointer-events: none;
+    }
+    .solution-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;
+    }
+    @media (max-width: 640px) { .solution-grid { grid-template-columns: 1fr; } }
+    .feat-card {
+      background: var(--bg-1); border: 1px solid var(--border-s);
+      border-radius: 14px; padding: 2rem; position: relative; overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.28s, transform 0.28s;
+    }
+    .feat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    }
+    .feat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+    .feat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--purple), #a855f7); }
+    .feat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--green), #34d399); }
+    .feat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+    .feat-card:hover {
+      border-color: rgba(74,127,212,0.5); transform: translateY(-6px);
+      box-shadow: 0 18px 44px rgba(74,127,212,0.1);
+    }
+    .feat-num {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace; margin-bottom: 1rem;
+    }
+    .feat-card h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 0.6rem; }
+    .feat-card p  { font-size: 0.9rem; color: var(--text-2); line-height: 1.75; font-family: 'Inter', sans-serif; }
+    .feat-tag {
       display: inline-block; margin-top: 1.25rem;
-      background: var(--accent-glow); border: 1px solid rgba(74,127,212,0.3);
-      color: var(--accent-2); font-size: 0.75rem; font-weight: 500;
+      background: rgba(74,127,212,0.07); border: 1px solid rgba(74,127,212,0.2);
+      color: var(--accent-2); font-size: 0.7rem; font-weight: 500;
       padding: 0.25rem 0.75rem; border-radius: 999px;
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
     }
 
+    /* ── ARCHITECTURE ── */
+    #architecture { background: var(--bg-1); text-align: center; }
+    #architecture::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:80px;
+      background: linear-gradient(180deg, var(--bg), transparent);
+      pointer-events: none;
+    }
+    .arch-subtitle { color: var(--text-2); font-size: 1rem; margin-bottom: 3.5rem; font-family: 'Inter', sans-serif; }
+    .arch-wrap { max-width: 820px; margin: 0 auto; overflow: visible; }
+    .arch-wrap svg { width: 100%; height: auto; overflow: visible; }
+
+    /* SVG node styles */
+    .n-user rect  { fill: rgba(16,185,129,0.07); stroke: rgba(16,185,129,0.4); stroke-width: 1.5; }
+    .n-user text  { fill: var(--green); font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.06em; }
+    .n-core rect  { fill: rgba(74,127,212,0.1); stroke: var(--accent); stroke-width: 1.5; filter: drop-shadow(0 0 14px rgba(74,127,212,0.28)); }
+    .n-core .ct   { fill: var(--text); font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:700; }
+    .n-core .cs   { fill: var(--text-2); font-family:'Inter',sans-serif; font-size:11px; font-weight:400; }
+    .n-tool rect  { fill: var(--bg-2); stroke: var(--border-s); stroke-width: 1; }
+    .n-tool text  { fill: var(--text-2); font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:500; }
+    .arch-line {
+      fill: none; stroke: rgba(74,127,212,0.3); stroke-width: 1.5;
+      stroke-dasharray: 1; stroke-dashoffset: 1;
+      transition: stroke-dashoffset 0.9s cubic-bezier(.4,0,.2,1);
+    }
+    .arch-line.drawn { stroke-dashoffset: 0; }
+    .arch-bottom-label { fill: var(--text-3); font-family:'JetBrains Mono',monospace; font-size:11px; }
+
     /* ── QUICK START ── */
-    #quickstart { background: var(--bg-1); }
-    .steps { display: flex; flex-direction: column; gap: 1.5rem; max-width: 720px; }
-    .step {
-      display: flex; gap: 1.5rem; align-items: flex-start;
+    #quickstart::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:80px;
+      background: linear-gradient(180deg, var(--bg-1), transparent);
+      pointer-events: none;
     }
-    .step-connector {
-      display: flex; flex-direction: column; align-items: center; gap: 0;
+    .tabs-nav {
+      display: flex; gap: 0;
+      background: var(--bg-1); border: 1px solid var(--border-s);
+      border-radius: 10px; padding: 4px; width: fit-content;
+      margin-bottom: 2.5rem;
     }
-    .step-num {
-      flex-shrink: 0;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--accent-glow); border: 1px solid var(--accent);
+    .tab-btn {
+      background: none; border: none; color: var(--text-2);
+      padding: 0.5rem 1.25rem; border-radius: 7px;
+      font-size: 0.875rem; font-weight: 500; cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; }
+    .tab-btn:not(.active):hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .steps { display: flex; flex-direction: column; gap: 1.5rem; max-width: 740px; }
+    .step  { display: flex; gap: 1.5rem; align-items: flex-start; }
+    .step-con { display: flex; flex-direction: column; align-items: center; }
+    .step-n {
+      flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(74,127,212,0.09); border: 1px solid rgba(74,127,212,0.4);
       color: var(--accent); font-weight: 700; font-size: 0.875rem;
       display: flex; align-items: center; justify-content: center;
     }
-    .step-line {
-      width: 1px; flex: 1; min-height: 24px;
-      background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
-      opacity: 0.3; margin-top: 4px;
-    }
+    .step-ln { width: 1px; flex: 1; min-height: 18px; margin-top: 4px;
+      background: linear-gradient(180deg, rgba(74,127,212,0.3), transparent); }
     .step-body { flex: 1; padding-bottom: 0.5rem; }
-    .step-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
-    .code-block {
-      background: #0a0e14; border: 1px solid var(--border);
-      border-radius: 10px; overflow: hidden;
-    }
-    .code-header {
+    .step-body h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+    .code-blk { background: #080c12; border: 1px solid var(--border-s); border-radius: 10px; overflow: hidden; }
+    .code-hdr {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 0.625rem 1rem;
-      background: var(--bg-2); border-bottom: 1px solid var(--border);
+      padding: 0.55rem 1rem; background: var(--bg-2); border-bottom: 1px solid var(--border-s);
     }
-    .code-lang {
-      font-size: 0.75rem; font-weight: 500;
-      color: var(--text-2); font-family: 'Space Mono', monospace;
+    .code-lang { font-size: 0.68rem; font-weight: 700; color: var(--text-3);
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+    .copy-btn {
+      font-size: 0.68rem; color: var(--text-2); cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border-s);
+      padding: 0.2rem 0.6rem; border-radius: 4px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
-    .code-copy {
-      font-size: 0.7rem; color: var(--accent); cursor: pointer;
-      font-family: 'Space Mono', monospace;
-      background: none; border: none; padding: 0;
-      transition: opacity 0.2s;
-    }
-    .code-copy:hover { opacity: 0.7; }
-    pre {
-      padding: 1.25rem 1.5rem;
-      overflow-x: auto;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.875rem;
-      line-height: 1.7;
-    }
+    .copy-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .copy-btn.ok { background: var(--green); color: #fff; border-color: var(--green); }
+    pre { padding: 1.25rem 1.5rem; overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; line-height: 1.85; }
     code { color: var(--text); }
-    .kw  { color: #c792ea; }
-    .str { color: #c3e88d; }
-    .cm  { color: #546e7a; }
-    .fn  { color: #82aaff; }
-    .punc{ color: var(--accent-2); }
-    .$ { color: #f78c6c; }
+    .ck { color: #89ddff; }
+    .cs { color: #c3e88d; }
+    .cc { color: #546e7a; font-style: italic; }
+    .cf { color: #82aaff; }
+    .cp { color: #f78c6c; }
+    .co { color: var(--green); }
+    .cd { color: #546e7a; }
 
     /* ── PHILOSOPHY ── */
     #philosophy {
-      background: var(--bg);
-      text-align: center;
+      min-height: 85vh; display: flex; align-items: center;
+      text-align: center; overflow: hidden;
     }
-    .philosophy-inner { max-width: 720px; margin: 0 auto; }
-    .philosophy-quote {
-      font-size: clamp(1.5rem, 4vw, 2.25rem);
-      font-weight: 700; line-height: 1.3;
+    .phil-inner { max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+    .phil-big {
+      font-size: clamp(2.75rem, 8.5vw, 6rem);
+      font-weight: 700; line-height: 1.05; letter-spacing: -0.025em;
       color: var(--text); margin-bottom: 2rem;
-      position: relative;
     }
-    .philosophy-quote::before {
-      content: '"';
-      position: absolute; top: -0.25em; left: -0.5em;
-      font-size: 3em; color: var(--accent); opacity: 0.2;
-      font-family: Georgia, serif; line-height: 1;
+    .phil-big em { font-style: normal; color: var(--accent); }
+    .phil-sub {
+      font-size: clamp(1rem, 2.5vw, 1.375rem); color: var(--text-2);
+      font-family: 'Inter', sans-serif; font-weight: 400; line-height: 1.7;
     }
-    .philosophy-quote em { font-style: normal; color: var(--accent); }
-    .philosophy-body {
-      font-size: 1.0625rem; color: var(--text-2); line-height: 1.8;
-      margin-bottom: 2rem;
-    }
-    .philosophy-pillars {
-      display: flex; flex-wrap: wrap; gap: 0.75rem;
-      justify-content: center; margin-top: 2.5rem;
-    }
-    .pillar {
-      background: var(--bg-1); border: 1px solid var(--border);
-      border-radius: 8px; padding: 0.625rem 1.25rem;
-      font-size: 0.875rem; font-weight: 500;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .pillar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 
     /* ── FOOTER ── */
     footer {
-      background: var(--bg-1); border-top: 1px solid var(--border);
+      background: var(--bg-1); border-top: 1px solid var(--border-s);
       padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4rem);
+      position: relative; z-index: 1;
     }
-    .footer-inner {
-      max-width: 1100px; margin: 0 auto;
-      display: grid; grid-template-columns: 2fr 1fr 1fr;
-      gap: 3rem;
+    .footer-grid {
+      max-width: 1100px; margin: 0 auto 3rem;
+      display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3.5rem;
     }
-    @media (max-width: 768px) {
-      .footer-inner { grid-template-columns: 1fr; }
-    }
-    .footer-brand h3 {
-      font-size: 1.25rem; font-weight: 700;
-      letter-spacing: 0.1em; color: var(--text); margin-bottom: 0.75rem;
-    }
-    .footer-brand h3 span { color: var(--accent); }
-    .footer-brand p { font-size: 0.9rem; color: var(--text-2); line-height: 1.7; }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; } }
+    .f-logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 0.16em; margin-bottom: 0.75rem; }
+    .f-logo span { color: var(--accent); }
+    .f-desc { font-size: 0.875rem; color: var(--text-2); line-height: 1.8; margin-bottom: 1.25rem; font-family: 'Inter', sans-serif; }
+    .f-built { font-size: 0.75rem; color: var(--text-3); }
     .footer-col h4 {
-      font-size: 0.75rem; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--text-2); margin-bottom: 1rem;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-3); margin-bottom: 1.25rem;
     }
-    .footer-links { display: flex; flex-direction: column; gap: 0.625rem; }
-    .footer-links a {
-      font-size: 0.9rem; color: var(--text-2); text-decoration: none;
-      transition: color 0.2s; display: flex; align-items: center; gap: 0.5rem;
+    .f-links { display: flex; flex-direction: column; gap: 0.75rem; }
+    .f-links a {
+      font-size: 0.875rem; color: var(--text-2); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem; width: fit-content;
+      transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--text); }
+    .f-links a:hover { color: var(--text); }
+    .f-btns { display: flex; flex-direction: column; gap: 0.625rem; margin-top: 1.25rem; }
+    .btn-gh {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border-s);
+      color: var(--text); padding: 0.5rem 1rem; border-radius: 6px;
+      font-size: 0.8rem; font-weight: 600; text-decoration: none;
+      transition: background 0.2s; width: fit-content; font-family: 'Space Grotesk', sans-serif;
+    }
+    .btn-gh:hover { background: rgba(255,255,255,0.1); }
+    .btn-kofi {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,94,25,0.09); border: 1px solid rgba(255,94,25,0.3);
+      color: #ff7040; padding: 0.5rem 1rem; border-radius: 6px;
+      font-size: 0.8rem; font-weight: 600; text-decoration: none;
+      transition: background 0.2s; width: fit-content; font-family: 'Space Grotesk', sans-serif;
+    }
+    .btn-kofi:hover { background: rgba(255,94,25,0.16); }
     .eth-box {
-      background: var(--bg); border: 1px solid var(--border);
+      background: var(--bg); border: 1px solid var(--border-s);
       border-radius: 8px; padding: 0.875rem 1rem;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem; color: var(--text-2);
-      word-break: break-all; line-height: 1.6;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+      color: var(--text-2); word-break: break-all; line-height: 1.7;
+      cursor: pointer; transition: border-color 0.2s;
+      user-select: none;
     }
-    .eth-label {
-      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 0.375rem;
-    }
-    .footer-bottom {
-      max-width: 1100px; margin: 3rem auto 0;
-      padding-top: 1.5rem; border-top: 1px solid var(--border);
+    .eth-box:hover { border-color: rgba(74,127,212,0.4); }
+    .eth-lbl { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 0.375rem; }
+    .eth-hint { font-size: 0.64rem; color: var(--text-3); display: block; margin-top: 0.375rem; transition: color 0.2s; }
+    .footer-bot {
+      max-width: 1100px; margin: 0 auto;
+      padding-top: 1.5rem; border-top: 1px solid var(--border-s);
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 1rem;
     }
-    .footer-bottom p { font-size: 0.8125rem; color: var(--text-2); }
-    .footer-bottom a { color: var(--accent); text-decoration: none; }
+    .footer-bot p { font-size: 0.78rem; color: var(--text-3); }
+    .footer-bot a { color: var(--text-2); text-decoration: none; }
+    .footer-bot a:hover { color: var(--accent); }
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      h1 { font-size: 2rem; }
+      .hero-actions { flex-direction: column; }
+      .tabs-nav { width: 100%; }
+      .tab-btn { flex: 1; text-align: center; }
+      .phil-big { font-size: 2.5rem; }
+    }
   </style>
 </head>
 <body>
+
+<canvas id="stars"></canvas>
 
 <!-- NAV -->
 <nav>
@@ -425,62 +537,72 @@
   <div class="nav-links">
     <a href="#problem">Problem</a>
     <a href="#solution">Solution</a>
+    <a href="#architecture">Architecture</a>
     <a href="#quickstart">Quick Start</a>
-    <a href="#philosophy">Philosophy</a>
   </div>
   <a href="https://github.com/sapgun/vespera" class="nav-cta" target="_blank" rel="noopener">
-    ★ GitHub
+    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
+    Star on GitHub
   </a>
 </nav>
 
-<!-- HERO -->
+<!-- MARQUEE -->
+<div class="marquee-bar" aria-hidden="true">
+  <div class="marquee-track">
+    <div class="marquee-item"><b>Local-first</b><span class="m-dot">·</span>Zero telemetry<span class="m-dot">·</span><b>MIT License</b><span class="m-dot">·</span>Works offline<span class="m-dot">·</span><b>No vendor lock-in</b><span class="m-dot">·</span>Open protocol<span class="m-dot">·</span><b>Composable by design</b><span class="m-dot">·</span>Human approval for Level 2+<span class="m-dot">·</span></div>
+    <div class="marquee-item"><b>Local-first</b><span class="m-dot">·</span>Zero telemetry<span class="m-dot">·</span><b>MIT License</b><span class="m-dot">·</span>Works offline<span class="m-dot">·</span><b>No vendor lock-in</b><span class="m-dot">·</span>Open protocol<span class="m-dot">·</span><b>Composable by design</b><span class="m-dot">·</span>Human approval for Level 2+<span class="m-dot">·</span></div>
+  </div>
+</div>
+
+<main>
+
+<!-- ── HERO ── -->
 <section id="hero">
+  <div class="orb orb-blue"></div>
+  <div class="orb orb-purple"></div>
   <div class="container hero-inner">
     <div>
-      <div class="hero-badge">Early Access · v0.1.0</div>
-      <h1>Stop letting AI tools <em>own</em> your workflow</h1>
+      <div class="hero-badge"><div class="bdot"></div>v0.2 — Open Source</div>
+      <h1>
+        <span class="w" style="--d:0s">Stop</span>&nbsp;<span class="w" style="--d:.08s">letting</span>&nbsp;<span class="w" style="--d:.16s">AI</span>&nbsp;<span class="w" style="--d:.24s">tools</span>&nbsp;<span class="w accent" style="--d:.32s">own</span>&nbsp;<span class="w" style="--d:.4s">your</span>&nbsp;<span class="w" style="--d:.48s">workflow</span>
+      </h1>
       <p class="hero-desc">
         VESPERA gives you a single, composable layer to orchestrate every AI tool you use —
         without vendor lock-in, context leakage, or cognitive overhead.
       </p>
       <div class="hero-actions">
         <a href="#quickstart" class="btn-primary">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
           Get Started
         </a>
-        <a href="https://github.com/sapgun/vespera" class="btn-secondary" target="_blank" rel="noopener">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
+        <a href="https://github.com/sapgun/vespera" class="btn-ghost" target="_blank" rel="noopener">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
           View on GitHub
         </a>
       </div>
+      <div class="hero-trust">
+        <span class="trust-item">MIT License</span>
+        <span class="trust-item">Local-first</span>
+        <span class="trust-item">No telemetry</span>
+      </div>
     </div>
 
-    <div class="hero-visual">
+    <div class="hero-visual reveal">
       <div class="mock-window">
-        <div class="mock-titlebar">
-          <div class="mock-dot"></div>
-          <div class="mock-dot"></div>
-          <div class="mock-dot"></div>
-          <span class="mock-titlebar-text">vespera — orchestrator</span>
+        <div class="mock-bar">
+          <div class="md"></div><div class="md"></div><div class="md"></div>
+          <span class="mock-bar-title">vespera — orchestrator</span>
         </div>
         <div class="mock-body">
-          <!-- Screenshot placeholder — swap src when available -->
-          <div class="mock-lines">
-            <div class="mock-line accent long"></div>
-            <div class="mock-line short" style="width:40%"></div>
-            <div class="mock-line medium" style="margin-top:.5rem"></div>
-            <div class="mock-line long"></div>
-            <div class="mock-line short"></div>
-            <div class="mock-line accent medium" style="margin-top:.5rem"></div>
-            <div class="mock-line long"></div>
-            <div class="mock-line medium"></div>
-            <div class="mock-line short" style="width:30%"></div>
-            <div class="mock-line accent long" style="margin-top:.5rem; opacity:.15"></div>
-            <div class="mock-line medium" style="opacity:.4"></div>
-          </div>
-          <div class="mock-placeholder">
-            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            <span>[ screenshot placeholder ]</span>
+          <div class="mt">
+            <div><span class="mp">$</span> <span class="cf">vespera</span> run <span class="cs">"audit auth module"</span> \</div>
+            <div>&nbsp;&nbsp;<span class="ck">--tool</span> claude <span class="ck">--tool</span> review</div>
+            <div>&nbsp;</div>
+            <div><span class="ma">→</span> <span class="cs">claude</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; analyzing <span class="cd">.........</span> <span class="co">✔</span> <span class="cd">(2.1s)</span></div>
+            <div><span class="ma">→</span> <span class="mb">review</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; verifying <span class="cd">.........</span> <span class="co">✔</span> <span class="cd">(0.8s)</span></div>
+            <div>&nbsp;</div>
+            <div><span class="co">✔</span>&nbsp; Pipeline complete &nbsp;<span class="cd">[3/3]</span>&nbsp; <span class="cf">2.9s</span></div>
+            <div><span class="mp">$</span> <span class="mcur"></span></div>
           </div>
         </div>
       </div>
@@ -488,245 +610,416 @@
   </div>
 </section>
 
-<!-- PROBLEM -->
+<!-- ── PROBLEM ── -->
 <section id="problem">
   <div class="container">
-    <span class="section-label">The Problem</span>
-    <h2>Your AI stack is <br />working against you</h2>
-    <p class="lead">
-      The more AI tools you adopt, the more time you spend managing them —
-      not building. Three patterns are silently killing your productivity.
-    </p>
-    <div class="pain-list">
-      <div class="pain-item">
+    <span class="section-label reveal">The Problem</span>
+    <h2 class="reveal">Your AI stack is<br />working against you</h2>
+    <p class="lead reveal">The more AI tools you adopt, the more time you spend managing them — not building. Three patterns are silently killing your productivity.</p>
+    <div class="pain-grid">
+      <div class="pain-card reveal d1">
         <div class="pain-num">01</div>
-        <div>
-          <h3>Context fragmentation across tools</h3>
-          <p>
-            Each AI tool maintains its own isolated context. You repeat yourself every session,
-            watch Claude forget what Cursor knows, and lose the thread between ChatGPT, Copilot,
-            and your local models. Your intent evaporates across tool boundaries.
-          </p>
-        </div>
+        <h3>Context fragmentation</h3>
+        <p>Each AI tool maintains isolated context. You repeat yourself every session, watch Claude forget what Cursor knows, and lose the thread between tools. Your intent evaporates at every boundary.</p>
       </div>
-      <div class="pain-item">
+      <div class="pain-card reveal d2">
         <div class="pain-num">02</div>
-        <div>
-          <h3>Vendor lock-in disguised as convenience</h3>
-          <p>
-            Every tool wants to be your primary interface — proprietary plugins, closed APIs,
-            pricing cliffs, and UI-first designs that trap your prompts inside their ecosystem.
-            Switching costs compound until you stop switching.
-          </p>
-        </div>
+        <h3>Vendor lock-in by design</h3>
+        <p>Every tool wants to be your primary interface — proprietary plugins, closed APIs, pricing cliffs that trap your prompts inside their ecosystem. Switching costs compound until you stop switching.</p>
       </div>
-      <div class="pain-item">
+      <div class="pain-card reveal d3">
         <div class="pain-num">03</div>
-        <div>
-          <h3>No composable orchestration layer</h3>
-          <p>
-            You have a dozen hammers and no way to connect them. Chaining tools means
-            manual copy-paste, brittle shell scripts, or paying for yet another SaaS wrapper.
-            There's no standard protocol for "AI tool does X, then hands off to Y."
-          </p>
-        </div>
+        <h3>No composable layer</h3>
+        <p>You have a dozen hammers with no way to connect them. Chaining tools means manual copy-paste or brittle scripts. There's no standard protocol for "tool A does X, then hands off to tool B."</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SOLUTION -->
+<!-- ── SOLUTION ── -->
 <section id="solution">
   <div class="container">
-    <span class="section-label">The Solution</span>
-    <h2>One protocol to<br />orchestrate them all</h2>
-    <p class="lead">
-      VESPERA is a lightweight orchestration layer that treats AI tools as stateless workers —
-      composable, observable, and replaceable on demand.
-    </p>
+    <span class="section-label reveal">The Solution</span>
+    <h2 class="reveal">One protocol to<br />orchestrate them all</h2>
+    <p class="lead reveal">VESPERA is a lightweight orchestration runtime that treats AI tools as stateless workers — composable, observable, and replaceable on demand.</p>
     <div class="solution-grid">
-      <div class="feature-card">
-        <div class="feature-num">FEATURE / 01</div>
+      <div class="feat-card reveal d1">
+        <div class="feat-num">FEATURE · 01</div>
         <h3>Unified Context Bus</h3>
-        <p>
-          A shared, persistent context store all your AI tools read from and write to.
-          One source of truth for your intent, project state, and working memory —
-          no more cross-tool amnesia.
-        </p>
-        <span class="feature-tag">ctx.read() / ctx.write()</span>
+        <p>A shared, persistent context store all your AI tools read from and write to. One source of truth for your intent, project state, and working memory — no more cross-tool amnesia.</p>
+        <span class="feat-tag">ctx.read() / ctx.write()</span>
       </div>
-      <div class="feature-card">
-        <div class="feature-num">FEATURE / 02</div>
+      <div class="feat-card reveal d2">
+        <div class="feat-num">FEATURE · 02</div>
         <h3>Tool Composability Engine</h3>
-        <p>
-          Define pipelines that chain tools with typed inputs and outputs.
-          Run Claude for reasoning, a local model for code gen, and a custom agent
-          for verification — all in a single declarative config.
-        </p>
-        <span class="feature-tag">pipeline.yaml</span>
+        <p>Define pipelines that chain tools with typed inputs and outputs. Claude for reasoning, a local model for codegen, a custom agent for verification — all in one declarative config.</p>
+        <span class="feat-tag">pipeline.yaml</span>
       </div>
-      <div class="feature-card">
-        <div class="feature-num">FEATURE / 03</div>
+      <div class="feat-card reveal d3">
+        <div class="feat-num">FEATURE · 03</div>
         <h3>Zero-Lock Runtime</h3>
-        <p>
-          Open protocol, open source. Swap models, providers, or entire tool layers
-          without rewriting your workflows. Your prompts and logic remain yours,
-          not locked inside any vendor's SDK.
-        </p>
-        <span class="feature-tag">--provider any</span>
+        <p>Open protocol, open source. Swap models, providers, or entire tool layers without rewriting your workflows. Your prompts and logic remain yours — not locked inside any vendor's SDK.</p>
+        <span class="feat-tag">--provider any</span>
+      </div>
+      <div class="feat-card reveal d4">
+        <div class="feat-num">FEATURE · 04</div>
+        <h3>Observable Pipelines</h3>
+        <p>Every tool call is logged, traceable, and replayable. Debug where context was lost, measure latency per tool, and compare runs side by side. Full audit trail out of the box.</p>
+        <span class="feat-tag">vespera trace --run &lt;id&gt;</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- QUICK START -->
+<!-- ── ARCHITECTURE ── -->
+<section id="architecture">
+  <div class="container">
+    <span class="section-label reveal" style="display:block;text-align:center">Architecture</span>
+    <h2 class="reveal" style="text-align:center">You are the OS</h2>
+    <p class="arch-subtitle reveal">VESPERA sits between you and every AI tool — a thin, transparent orchestration layer you always control.</p>
+
+    <div class="arch-wrap reveal">
+      <svg viewBox="0 0 800 345" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VESPERA Architecture: You → VESPERA Core → Tool Layer">
+
+        <!-- Lines behind nodes -->
+        <path class="arch-line" id="al0" pathLength="1" d="M400,54 C400,88 400,88 400,110"/>
+        <path class="arch-line" id="al1" pathLength="1" d="M400,170 C400,212 85,212 85,252"/>
+        <path class="arch-line" id="al2" pathLength="1" d="M400,170 C400,212 240,212 240,252"/>
+        <path class="arch-line" id="al3" pathLength="1" d="M400,170 C400,212 400,212 400,252"/>
+        <path class="arch-line" id="al4" pathLength="1" d="M400,170 C400,212 560,212 560,252"/>
+        <path class="arch-line" id="al5" pathLength="1" d="M400,170 C400,212 715,212 715,252"/>
+
+        <!-- YOU -->
+        <g class="n-user">
+          <rect x="300" y="10" width="200" height="44" rx="8"/>
+          <text x="400" y="37" text-anchor="middle">YOU</text>
+        </g>
+
+        <!-- VESPERA CORE -->
+        <g class="n-core">
+          <rect x="235" y="110" width="330" height="60" rx="10"/>
+          <text class="ct" x="400" y="137" text-anchor="middle">VESPERA CORE</text>
+          <text class="cs" x="400" y="157" text-anchor="middle">Context Bus · Pipeline Engine · Router</text>
+        </g>
+
+        <!-- Tool layer -->
+        <g class="n-tool">
+          <rect x="20"  y="252" width="130" height="40" rx="7"/>
+          <text x="85"  y="277" text-anchor="middle">Context Bus</text>
+        </g>
+        <g class="n-tool">
+          <rect x="175" y="252" width="130" height="40" rx="7"/>
+          <text x="240" y="277" text-anchor="middle">Claude API</text>
+        </g>
+        <g class="n-tool">
+          <rect x="335" y="252" width="130" height="40" rx="7"/>
+          <text x="400" y="277" text-anchor="middle">Code Agents</text>
+        </g>
+        <g class="n-tool">
+          <rect x="495" y="252" width="130" height="40" rx="7"/>
+          <text x="560" y="277" text-anchor="middle">Local Models</text>
+        </g>
+        <g class="n-tool">
+          <rect x="650" y="252" width="130" height="40" rx="7"/>
+          <text x="715" y="277" text-anchor="middle">Custom Tools</text>
+        </g>
+
+        <text class="arch-bottom-label" x="400" y="332" text-anchor="middle">plug in anything — swap out anything</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUICK START ── -->
 <section id="quickstart">
   <div class="container">
-    <span class="section-label">Quick Start</span>
-    <h2>Up and running<br />in three steps</h2>
-    <p class="lead">No account required. No cloud setup. Runs locally from the first command.</p>
+    <span class="section-label reveal">Quick Start</span>
+    <h2 class="reveal">Up and running<br />in three steps</h2>
+    <p class="lead reveal">No account. No cloud setup. Runs locally from the first command.</p>
 
-    <div class="steps">
-      <div class="step">
-        <div class="step-connector">
-          <div class="step-num">1</div>
-          <div class="step-line"></div>
-        </div>
-        <div class="step-body">
-          <h3>Install VESPERA</h3>
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">bash</span>
-              <button class="code-copy" onclick="this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
+    <div class="tabs-nav reveal">
+      <button class="tab-btn active" data-tab="tab-mac">macOS</button>
+      <button class="tab-btn" data-tab="tab-linux">Linux</button>
+      <button class="tab-btn" data-tab="tab-win">Windows</button>
+    </div>
+
+    <!-- macOS -->
+    <div class="tab-panel active" id="tab-mac">
+      <div class="steps">
+        <div class="step">
+          <div class="step-con"><div class="step-n">1</div><div class="step-ln"></div></div>
+          <div class="step-body">
+            <h3>Install VESPERA</h3>
+            <div class="code-blk">
+              <div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code="npm install -g vespera">Copy</button></div>
+              <pre><code><span class="cp">$</span> <span class="cf">npm</span> install <span class="ck">-g</span> vespera
+<span class="cc"># or with bun</span>
+<span class="cp">$</span> <span class="cf">bun</span> add <span class="ck">-g</span> vespera</code></pre>
             </div>
-            <pre><code><span class="$">$</span> <span class="fn">npm</span> install <span class="kw">-g</span> vespera
-<span class="cm"># or with bun</span>
-<span class="$">$</span> <span class="fn">bun</span> add <span class="kw">-g</span> vespera</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-con"><div class="step-n">2</div><div class="step-ln"></div></div>
+          <div class="step-body">
+            <h3>Initialise your workspace</h3>
+            <div class="code-blk">
+              <div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code="vespera init">Copy</button></div>
+              <pre><code><span class="cp">$</span> <span class="cf">vespera</span> init
+
+<span class="co">✔</span>  Created  <span class="cs">.vespera/config.yaml</span>
+<span class="co">✔</span>  Created  <span class="cs">.vespera/pipelines/default.yaml</span>
+<span class="co">✔</span>  Context bus ready on <span class="ck">localhost:7432</span></code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-con"><div class="step-n">3</div></div>
+          <div class="step-body">
+            <h3>Run your first pipeline</h3>
+            <div class="code-blk">
+              <div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code='vespera run "refactor auth module" --tool claude --tool codereview --context ./src/auth'>Copy</button></div>
+              <pre><code><span class="cp">$</span> <span class="cf">vespera</span> run <span class="cs">"refactor auth module"</span> \
+  <span class="ck">--tool</span> claude \
+  <span class="ck">--tool</span> codereview \
+  <span class="ck">--context</span> <span class="cs">./src/auth</span>
+
+<span class="co">→</span>  <span class="cs">claude</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reasoning <span class="cd">........</span> <span class="co">✔</span>
+<span class="co">→</span>  <span style="color:#c792ea">codereview</span>&nbsp;&nbsp;&nbsp; verifying <span class="cd">........</span> <span class="co">✔</span>
+<span class="co">✔</span>  Pipeline complete  <span class="cd">(4.2s)</span></code></pre>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="step">
-        <div class="step-connector">
-          <div class="step-num">2</div>
-          <div class="step-line"></div>
+    <!-- Linux -->
+    <div class="tab-panel" id="tab-linux">
+      <div class="steps">
+        <div class="step">
+          <div class="step-con"><div class="step-n">1</div><div class="step-ln"></div></div>
+          <div class="step-body"><h3>Install VESPERA</h3>
+            <div class="code-blk"><div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code="npm install -g vespera">Copy</button></div>
+              <pre><code><span class="cp">$</span> <span class="cf">npm</span> install <span class="ck">-g</span> vespera
+<span class="cc"># or: curl -fsSL https://vespera.sh | sh</span></code></pre></div></div>
         </div>
-        <div class="step-body">
-          <h3>Initialise your workspace</h3>
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">bash</span>
-              <button class="code-copy" onclick="this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
-            </div>
-            <pre><code><span class="$">$</span> <span class="fn">vespera</span> init
-
-<span class="cm">✔  Created  .vespera/config.yaml</span>
-<span class="cm">✔  Created  .vespera/pipelines/default.yaml</span>
-<span class="cm">✔  Context bus ready on localhost:7432</span></code></pre>
-          </div>
+        <div class="step">
+          <div class="step-con"><div class="step-n">2</div><div class="step-ln"></div></div>
+          <div class="step-body"><h3>Initialise your workspace</h3>
+            <div class="code-blk"><div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code="vespera init">Copy</button></div>
+              <pre><code><span class="cp">$</span> <span class="cf">vespera</span> init
+<span class="co">✔</span>  Context bus ready on <span class="ck">localhost:7432</span></code></pre></div></div>
+        </div>
+        <div class="step">
+          <div class="step-con"><div class="step-n">3</div></div>
+          <div class="step-body"><h3>Run your first pipeline</h3>
+            <div class="code-blk"><div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code='vespera run "refactor auth module" --tool claude --context ./src'>Copy</button></div>
+              <pre><code><span class="cp">$</span> <span class="cf">vespera</span> run <span class="cs">"refactor auth module"</span> \
+  <span class="ck">--tool</span> claude <span class="ck">--context</span> <span class="cs">./src</span>
+<span class="co">✔</span>  Pipeline complete  <span class="cd">(4.2s)</span></code></pre></div></div>
         </div>
       </div>
+    </div>
 
-      <div class="step">
-        <div class="step-connector">
-          <div class="step-num">3</div>
+    <!-- Windows -->
+    <div class="tab-panel" id="tab-win">
+      <div class="steps">
+        <div class="step">
+          <div class="step-con"><div class="step-n">1</div><div class="step-ln"></div></div>
+          <div class="step-body"><h3>Install VESPERA</h3>
+            <div class="code-blk"><div class="code-hdr"><span class="code-lang">powershell</span><button class="copy-btn" data-code="npm install -g vespera">Copy</button></div>
+              <pre><code><span class="cp">></span> <span class="cf">npm</span> install <span class="ck">-g</span> vespera
+<span class="cc"># or with bun</span>
+<span class="cp">></span> <span class="cf">bun</span> add <span class="ck">-g</span> vespera</code></pre></div></div>
         </div>
-        <div class="step-body">
-          <h3>Run your first pipeline</h3>
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">bash</span>
-              <button class="code-copy" onclick="this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
-            </div>
-            <pre><code><span class="$">$</span> <span class="fn">vespera</span> run <span class="str">"refactor auth module"</span> \
-  <span class="kw">--tool</span> claude \
-  <span class="kw">--tool</span> codereview \
-  <span class="kw">--context</span> <span class="str">./src/auth</span>
-
-<span class="cm">→  claude          reasoning .......... ✔</span>
-<span class="cm">→  codereview      verification ........ ✔</span>
-<span class="cm">✔  Pipeline complete  (4.2s)</span></code></pre>
-          </div>
+        <div class="step">
+          <div class="step-con"><div class="step-n">2</div><div class="step-ln"></div></div>
+          <div class="step-body"><h3>Initialise your workspace</h3>
+            <div class="code-blk"><div class="code-hdr"><span class="code-lang">powershell</span><button class="copy-btn" data-code="vespera init">Copy</button></div>
+              <pre><code><span class="cp">></span> <span class="cf">vespera</span> init
+<span class="co">✔</span>  Context bus ready on <span class="ck">localhost:7432</span></code></pre></div></div>
+        </div>
+        <div class="step">
+          <div class="step-con"><div class="step-n">3</div></div>
+          <div class="step-body"><h3>Run your first pipeline</h3>
+            <div class="code-blk"><div class="code-hdr"><span class="code-lang">powershell</span><button class="copy-btn" data-code='vespera run "refactor auth module" --tool claude --context ./src'>Copy</button></div>
+              <pre><code><span class="cp">></span> <span class="cf">vespera</span> run <span class="cs">"refactor auth module"</span> `
+  <span class="ck">--tool</span> claude `
+  <span class="ck">--context</span> <span class="cs">./src</span>
+<span class="co">✔</span>  Pipeline complete  <span class="cd">(4.2s)</span></code></pre></div></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PHILOSOPHY -->
+<!-- ── PHILOSOPHY ── -->
 <section id="philosophy">
-  <div class="container philosophy-inner">
-    <span class="section-label">Philosophy</span>
-    <p class="philosophy-quote">
-      AI tools are <em>workers</em>, not <em>owners</em>
+  <div class="container phil-inner">
+    <p class="phil-big reveal">
+      AI tools are <em>workers</em>,<br />not <em>owners</em>.
     </p>
-    <p class="philosophy-body">
-      Every AI tool should do exactly what you tell it, hand off cleanly, and disappear.
-      The moment a tool starts demanding your attention, restructuring your files, or
-      dictating your interface — it's no longer working for you.
-      VESPERA enforces a strict principal hierarchy: <strong>you decide</strong>,
-      the orchestrator schedules, the tools execute.
+    <p class="phil-sub reveal d1">
+      VESPERA puts the final authority back where it belongs.
     </p>
-    <p class="philosophy-body">
-      This isn't about distrust. It's about <em>composability</em>. A tool that can be
-      swapped, paused, or removed without breaking your workflow is a tool worth keeping.
-      Build systems where replacing any one piece costs you nothing.
-    </p>
-    <div class="philosophy-pillars">
-      <div class="pillar"><div class="pillar-dot"></div>You own the context</div>
-      <div class="pillar"><div class="pillar-dot"></div>Tools are stateless workers</div>
-      <div class="pillar"><div class="pillar-dot"></div>Open protocol, always</div>
-      <div class="pillar"><div class="pillar-dot"></div>Zero vendor dependency</div>
-      <div class="pillar"><div class="pillar-dot"></div>Local-first by default</div>
-    </div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <h3>VES<span>P</span>ERA</h3>
-      <p>
-        An open-source orchestration runtime for composable AI workflows.
-        Built for developers who want to stay in control.
-      </p>
-    </div>
+</main>
 
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="f-logo">VES<span>P</span>ERA</div>
+      <p class="f-desc">An open-source orchestration runtime for composable AI workflows. Built for developers who want to stay in control of their tools.</p>
+      <span class="f-built">Built in public · @caro7370</span>
+    </div>
     <div class="footer-col">
       <h4>Links</h4>
-      <div class="footer-links">
+      <div class="f-links">
         <a href="https://github.com/sapgun/vespera" target="_blank" rel="noopener">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
-          GitHub
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub Repository
         </a>
-        <a href="https://ko-fi.com/sapgun" target="_blank" rel="noopener">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-          Ko-fi — Buy me a coffee
-        </a>
-        <a href="#quickstart">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Documentation
-        </a>
+        <a href="https://github.com/sapgun/vespera/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+        <a href="https://github.com/sapgun/vespera/issues" target="_blank" rel="noopener">Report Issues</a>
+        <a href="#quickstart">Documentation</a>
+      </div>
+      <div class="f-btns">
+        <a href="https://github.com/sapgun/vespera" class="btn-gh" target="_blank" rel="noopener">★ Star on GitHub</a>
+        <a href="https://ko-fi.com/sapgun" class="btn-kofi" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       </div>
     </div>
-
     <div class="footer-col">
       <h4>Support</h4>
-      <div class="eth-label">ETH Address</div>
-      <div class="eth-box">
-        0x0000000000000000000000000000000000000000
-        <br />
-        <span style="color:var(--accent);font-size:0.65rem">← replace with your address</span>
+      <div class="eth-box" id="eth-box" role="button" tabindex="0" aria-label="Copy ETH address">
+        <span class="eth-lbl">ETH Address</span>
+        <span class="eth-addr">0x0000000000000000000000000000000000000000</span>
+        <span class="eth-hint" id="eth-hint">click to copy</span>
       </div>
     </div>
   </div>
-
-  <div class="footer-bottom">
-    <p>© 2026 VESPERA. Released under the <a href="https://github.com/sapgun/vespera/blob/main/LICENSE">MIT License</a>.</p>
-    <p>Made with intent. No VC. No bullshit.</p>
+  <div class="footer-bot">
+    <p>© 2026 VESPERA · <a href="https://github.com/sapgun/vespera/blob/main/LICENSE">MIT License</a></p>
+    <p>No VC. No telemetry. No bullshit.</p>
   </div>
 </footer>
 
+<script>
+/* ─── STARS CANVAS ─── */
+(function(){
+  const c = document.getElementById('stars');
+  const x = c.getContext('2d');
+  let stars = [], W, H;
+
+  function resize(){
+    W = c.width  = window.innerWidth;
+    H = c.height = window.innerHeight;
+  }
+
+  function init(){
+    stars = [];
+    for(let i=0;i<160;i++){
+      stars.push({
+        x: Math.random()*W, y: Math.random()*H,
+        r: Math.random()*1.4+0.2,
+        phase: Math.random()*Math.PI*2,
+        spd: Math.random()*0.006+0.002
+      });
+    }
+  }
+
+  function draw(t){
+    x.clearRect(0,0,W,H);
+    for(const s of stars){
+      const a = 0.15 + Math.sin(t*s.spd+s.phase)*0.22;
+      x.beginPath();
+      x.arc(s.x,s.y,s.r,0,Math.PI*2);
+      x.fillStyle = `rgba(232,237,245,${Math.max(0.03,a)})`;
+      x.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize',()=>{ resize(); init(); });
+  resize(); init();
+  requestAnimationFrame(draw);
+})();
+
+/* ─── HERO STAGGER ─── */
+(function(){
+  const h1 = document.querySelector('h1');
+  if(!h1) return;
+  h1.querySelectorAll('.w').forEach(w=>{
+    w.style.transitionDelay = w.style.getPropertyValue('--d') || '0s';
+  });
+  requestAnimationFrame(()=> requestAnimationFrame(()=> h1.classList.add('go')));
+})();
+
+/* ─── SCROLL REVEAL ─── */
+(function(){
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.1});
+  els.forEach(el=>io.observe(el));
+})();
+
+/* ─── ARCHITECTURE LINES ─── */
+(function(){
+  const lines = document.querySelectorAll('.arch-line');
+  const section = document.getElementById('architecture');
+  if(!section) return;
+  const io = new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      lines.forEach((l,i)=> setTimeout(()=> l.classList.add('drawn'), i*160));
+      io.disconnect();
+    }
+  }, {threshold:0.25});
+  io.observe(section);
+})();
+
+/* ─── TABS ─── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const id = btn.dataset.tab;
+    btn.closest('section').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.closest('section').querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  });
+});
+
+/* ─── COPY BUTTONS ─── */
+document.querySelectorAll('.copy-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const txt = btn.dataset.code;
+    navigator.clipboard.writeText(txt).then(()=>{
+      btn.textContent = 'Copied!';
+      btn.classList.add('ok');
+      setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('ok'); }, 2000);
+    }).catch(()=>{ btn.textContent='Error'; setTimeout(()=> btn.textContent='Copy',1500); });
+  });
+});
+
+/* ─── ETH COPY ─── */
+(function(){
+  const box = document.getElementById('eth-box');
+  const hint = document.getElementById('eth-hint');
+  if(!box) return;
+  function doCopy(){
+    const addr = box.querySelector('.eth-addr').textContent.trim();
+    navigator.clipboard.writeText(addr).then(()=>{
+      hint.textContent = '✓ Copied!';
+      hint.style.color = 'var(--green)';
+      setTimeout(()=>{ hint.textContent='click to copy'; hint.style.color=''; }, 2200);
+    });
+  }
+  box.addEventListener('click', doCopy);
+  box.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') doCopy(); });
+})();
+</script>
 </body>
 </html>
