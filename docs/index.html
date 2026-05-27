@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VESPERA — AI tools are workers, not owners</title>
-  <meta name="description" content="VESPERA is an open-source orchestration runtime for composable AI workflows. One protocol to orchestrate them all." />
+  <title>VESPERA — Local AI orchestration runtime</title>
+  <meta name="description" content="VESPERA orchestrates AI tools as replaceable workers. A local, open-source runtime for context, routing, and workflow control across Claude, Grok, and local models." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
@@ -517,6 +517,63 @@
     .footer-bot a { color: var(--text-2); text-decoration: none; }
     .footer-bot a:hover { color: var(--accent); }
 
+    /* ── HOW IT WORKS ── */
+    #howworks { background: var(--bg); text-align: center; }
+    #howworks::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:80px;
+      background: linear-gradient(180deg, var(--bg-1), transparent);
+      pointer-events: none;
+    }
+    .hw-inner { max-width: 720px; margin: 0 auto; }
+    .hw-narrative {
+      font-size: clamp(1.2rem, 2.8vw, 1.75rem);
+      font-weight: 500; line-height: 1.75;
+      color: var(--text-2); font-family: 'Inter', sans-serif;
+    }
+    .hw-narrative .hl   { color: var(--text); font-weight: 600; }
+    .hw-narrative .vn   { color: var(--accent); font-weight: 700; }
+    .hw-line            { display: block; }
+    .hw-break           { display: block; height: 1.25em; }
+
+    /* ── ARCH CTA ── */
+    .arch-cta { text-align: center; margin-top: 2.5rem; }
+
+    /* ── STATUS PREVIEW ── */
+    .status-preview { max-width: 740px; margin-top: 2.5rem; }
+    .status-title {
+      font-size: 0.875rem; font-weight: 600; color: var(--text-2);
+      margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .status-title::before {
+      content: ''; display: inline-block;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    }
+
+    /* ── ETH COMING ── */
+    .eth-coming {
+      background: var(--bg); border: 1px solid var(--border-s);
+      border-radius: 8px; padding: 0.875rem 1rem;
+      font-size: 0.8125rem; color: var(--text-2); line-height: 1.7;
+      font-family: 'Inter', sans-serif;
+    }
+    .eth-coming-lbl {
+      font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-3);
+      display: block; margin-bottom: 0.5rem;
+    }
+
+    /* ── FOOTER GH STAR ── */
+    .btn-gh-star {
+      display: inline-flex; align-items: center; gap: 0.625rem;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text); padding: 0.875rem 1.75rem; border-radius: 8px;
+      font-size: 1rem; font-weight: 700; text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      font-family: 'Space Grotesk', sans-serif;
+      width: 100%; justify-content: center; max-width: 280px;
+    }
+    .btn-gh-star:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 480px) {
       h1 { font-size: 2rem; }
@@ -562,18 +619,17 @@
   <div class="orb orb-purple"></div>
   <div class="container hero-inner">
     <div>
-      <div class="hero-badge"><div class="bdot"></div>v0.2 — Open Source</div>
+      <div class="hero-badge"><div class="bdot"></div>v0.2-alpha · MIT · Open Source</div>
       <h1>
-        <span class="w" style="--d:0s">Stop</span>&nbsp;<span class="w" style="--d:.08s">letting</span>&nbsp;<span class="w" style="--d:.16s">AI</span>&nbsp;<span class="w" style="--d:.24s">tools</span>&nbsp;<span class="w accent" style="--d:.32s">own</span>&nbsp;<span class="w" style="--d:.4s">your</span>&nbsp;<span class="w" style="--d:.48s">workflow</span>
+        <span class="w" style="--d:0s">VESPERA</span>&nbsp;<span class="w" style="--d:.08s">orchestrates</span>&nbsp;<span class="w" style="--d:.16s">AI</span>&nbsp;<span class="w" style="--d:.24s">tools</span>&nbsp;<span class="w" style="--d:.32s">as</span>&nbsp;<span class="w accent" style="--d:.4s">replaceable</span>&nbsp;<span class="w" style="--d:.48s">workers.</span>
       </h1>
       <p class="hero-desc">
-        VESPERA gives you a single, composable layer to orchestrate every AI tool you use —
-        without vendor lock-in, context leakage, or cognitive overhead.
+        A local, open-source runtime for context, routing, and workflow control
+        across Claude, Grok, and local models.
       </p>
       <div class="hero-actions">
         <a href="#quickstart" class="btn-primary">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
-          Get Started
+          Try the CLI →
         </a>
         <a href="https://github.com/sapgun/vespera" class="btn-ghost" target="_blank" rel="noopener">
           <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
@@ -581,9 +637,10 @@
         </a>
       </div>
       <div class="hero-trust">
+        <span class="trust-item">v0.2-alpha</span>
+        <span class="trust-item">Python</span>
         <span class="trust-item">MIT License</span>
-        <span class="trust-item">Local-first</span>
-        <span class="trust-item">No telemetry</span>
+        <span class="trust-item">Windows / Mac / Linux</span>
       </div>
     </div>
 
@@ -606,6 +663,20 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="howworks">
+  <div class="container hw-inner">
+    <span class="section-label reveal" style="display:block">In practice</span>
+    <div class="hw-narrative">
+      <span class="hw-line reveal d1"><span class="hl">Cursor</span> wrote the plan.</span>
+      <span class="hw-line reveal d2"><span class="hl">Claude</span> reviews it.</span>
+      <span class="hw-line reveal d3">A <span class="hl">local agent</span> runs tests.</span>
+      <span class="hw-break"></span>
+      <span class="hw-line reveal d4"><span class="vn">VESPERA</span> keeps all three working<br />from the same project memory.</span>
     </div>
   </div>
 </section>
@@ -705,7 +776,7 @@
         <!-- Tool layer -->
         <g class="n-tool">
           <rect x="20"  y="252" width="130" height="40" rx="7"/>
-          <text x="85"  y="277" text-anchor="middle">Context Bus</text>
+          <text x="85"  y="277" text-anchor="middle">Shared Memory</text>
         </g>
         <g class="n-tool">
           <rect x="175" y="252" width="130" height="40" rx="7"/>
@@ -726,6 +797,9 @@
 
         <text class="arch-bottom-label" x="400" y="332" text-anchor="middle">plug in anything — swap out anything</text>
       </svg>
+    </div>
+    <div class="arch-cta reveal">
+      <a href="https://github.com/sapgun/vespera" class="btn-ghost" target="_blank" rel="noopener">Read the Docs →</a>
     </div>
   </div>
 </section>
@@ -789,6 +863,18 @@
             </div>
           </div>
         </div>
+      <div class="status-preview reveal">
+        <div class="status-title">Check system status</div>
+        <div class="code-blk">
+          <div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code="python core/vespera.py status">Copy</button></div>
+          <pre><code><span class="cp">$</span> <span class="cf">python</span> core/vespera.py status
+<span class="cd">┌─────────────────┬──────────────────┐</span>
+<span class="cd">│</span> Approval Queue  <span class="cd">│</span> <span class="co">✓ Clean</span>          <span class="cd">│</span>
+<span class="cd">│</span> Asset Inbox     <span class="cd">│</span> <span class="ck">2 pending</span>        <span class="cd">│</span>
+<span class="cd">│</span> Today's Intake  <span class="cd">│</span> <span class="cf">3 tasks</span>          <span class="cd">│</span>
+<span class="cd">│</span> Last Backup     <span class="cd">│</span> 2026-05-27 08:00 <span class="cd">│</span>
+<span class="cd">└─────────────────┴──────────────────┘</span></code></pre>
+        </div>
       </div>
     </div>
 
@@ -816,6 +902,19 @@
               <pre><code><span class="cp">$</span> <span class="cf">vespera</span> run <span class="cs">"refactor auth module"</span> \
   <span class="ck">--tool</span> claude <span class="ck">--context</span> <span class="cs">./src</span>
 <span class="co">✔</span>  Pipeline complete  <span class="cd">(4.2s)</span></code></pre></div></div>
+        </div>
+      </div>
+      <div class="status-preview">
+        <div class="status-title">Check system status</div>
+        <div class="code-blk">
+          <div class="code-hdr"><span class="code-lang">bash</span><button class="copy-btn" data-code="python core/vespera.py status">Copy</button></div>
+          <pre><code><span class="cp">$</span> <span class="cf">python</span> core/vespera.py status
+<span class="cd">┌─────────────────┬──────────────────┐</span>
+<span class="cd">│</span> Approval Queue  <span class="cd">│</span> <span class="co">✓ Clean</span>          <span class="cd">│</span>
+<span class="cd">│</span> Asset Inbox     <span class="cd">│</span> <span class="ck">2 pending</span>        <span class="cd">│</span>
+<span class="cd">│</span> Today's Intake  <span class="cd">│</span> <span class="cf">3 tasks</span>          <span class="cd">│</span>
+<span class="cd">│</span> Last Backup     <span class="cd">│</span> 2026-05-27 08:00 <span class="cd">│</span>
+<span class="cd">└─────────────────┴──────────────────┘</span></code></pre>
         </div>
       </div>
     </div>
@@ -846,6 +945,19 @@
   <span class="ck">--tool</span> claude `
   <span class="ck">--context</span> <span class="cs">./src</span>
 <span class="co">✔</span>  Pipeline complete  <span class="cd">(4.2s)</span></code></pre></div></div>
+        </div>
+      </div>
+      <div class="status-preview">
+        <div class="status-title">Check system status</div>
+        <div class="code-blk">
+          <div class="code-hdr"><span class="code-lang">powershell</span><button class="copy-btn" data-code="py core/vespera.py status">Copy</button></div>
+          <pre><code><span class="cp">></span> <span class="cf">py</span> core/vespera.py status
+<span class="cd">┌─────────────────┬──────────────────┐</span>
+<span class="cd">│</span> Approval Queue  <span class="cd">│</span> <span class="co">✓ Clean</span>          <span class="cd">│</span>
+<span class="cd">│</span> Asset Inbox     <span class="cd">│</span> <span class="ck">2 pending</span>        <span class="cd">│</span>
+<span class="cd">│</span> Today's Intake  <span class="cd">│</span> <span class="cf">3 tasks</span>          <span class="cd">│</span>
+<span class="cd">│</span> Last Backup     <span class="cd">│</span> 2026-05-27 08:00 <span class="cd">│</span>
+<span class="cd">└─────────────────┴──────────────────┘</span></code></pre>
         </div>
       </div>
     </div>
@@ -886,22 +998,24 @@
         <a href="#quickstart">Documentation</a>
       </div>
       <div class="f-btns">
-        <a href="https://github.com/sapgun/vespera" class="btn-gh" target="_blank" rel="noopener">★ Star on GitHub</a>
+        <a href="https://github.com/sapgun/vespera" class="btn-gh-star" target="_blank" rel="noopener">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.021C22 6.484 17.522 2 12 2z"/></svg>
+          ⭐ Star on GitHub
+        </a>
         <a href="https://ko-fi.com/sapgun" class="btn-kofi" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       </div>
     </div>
     <div class="footer-col">
       <h4>Support</h4>
-      <div class="eth-box" id="eth-box" role="button" tabindex="0" aria-label="Copy ETH address">
-        <span class="eth-lbl">ETH Address</span>
-        <span class="eth-addr">0x0000000000000000000000000000000000000000</span>
-        <span class="eth-hint" id="eth-hint">click to copy</span>
+      <div class="eth-coming">
+        <span class="eth-coming-lbl">ETH Donations</span>
+        💎 ETH donations — address coming soon
       </div>
     </div>
   </div>
   <div class="footer-bot">
     <p>© 2026 VESPERA · <a href="https://github.com/sapgun/vespera/blob/main/LICENSE">MIT License</a></p>
-    <p>No VC. No telemetry. No bullshit.</p>
+    <p>Open source. Local-first. No telemetry by default.</p>
   </div>
 </footer>
 
@@ -1004,22 +1118,6 @@ document.querySelectorAll('.copy-btn').forEach(btn=>{
   });
 });
 
-/* ─── ETH COPY ─── */
-(function(){
-  const box = document.getElementById('eth-box');
-  const hint = document.getElementById('eth-hint');
-  if(!box) return;
-  function doCopy(){
-    const addr = box.querySelector('.eth-addr').textContent.trim();
-    navigator.clipboard.writeText(addr).then(()=>{
-      hint.textContent = '✓ Copied!';
-      hint.style.color = 'var(--green)';
-      setTimeout(()=>{ hint.textContent='click to copy'; hint.style.color=''; }, 2200);
-    });
-  }
-  box.addEventListener('click', doCopy);
-  box.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') doCopy(); });
-})();
 </script>
 </body>
 </html>
